@@ -1,4 +1,4 @@
-include("ssh-utilities.jl")
+include("ssh_utilities.jl")
 usingpkg("JSON, Markdown, Dates")
 
 # It is necessary to use SSH key login, which removes the need for a password for each login, thus ensuring a password-less, automatic login process
