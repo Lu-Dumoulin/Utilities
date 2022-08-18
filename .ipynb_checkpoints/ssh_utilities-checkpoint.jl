@@ -94,7 +94,7 @@ end
 function update_ext(cluster_directory_path, local_directory_path, ext=".out")
     list_of_filenames = filter!(x->endswith(x, ext), split(ssh("ls $cluster_directory_path"), "\n", keepempty=false) )
     for filename in list_of_filenames
-       if filesize(ldir*filename) != tryparse(Int, readchomp(`ssh $username$host stat --printf="%s" $(cluster_directory_path*filename)`))
+       if filesize(local_directory_path*filename) != tryparse(Int, readchomp(`ssh $username$host stat --printf="%s" $(cluster_directory_path*filename)`))
             println("update $username$host:$(cluster_directory_path*filename) to $(local_directory_path*filename)")
             run(`scp -r $username$host:$(cluster_directory_path*filename) $local_directory_path`)
         end
@@ -115,11 +115,11 @@ function download_dir(cluster_directory_path, local_directory_path)
     isdir(local_directory_path) ? nothing : mkpath(local_directory_path)
     list_of_local_subdirectories = readdir(local_directory_path)
     list_of_subdirectories = split(ssh("ls $cluster_directory_path"), "\n", keepempty=false)
-    for subdirectory in list_of_subdirectories
+    Threads.@threads for subdirectory in list_of_subdirectories
         o = findfirst(subdirectory .== list_of_local_subdirectories)
         if o == nothing
             # isdefined(Main, :IJulia) ? IJulia.clear_output(true) : nothing
-            println("copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
+            println("Thread $(Threads.threadid()) copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
             run(`scp -r $username$host:$cluster_directory_path$subdirectory $local_directory_path`)
         else
             download_dir(cluster_directory_path*subdirectory*"/", local_directory_path*subdirectory*"/")

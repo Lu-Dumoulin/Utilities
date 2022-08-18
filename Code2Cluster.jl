@@ -121,9 +121,9 @@ function getinfoout(pathout::String)
         if length(sp2) == 0
             return "", "", sp[1]
         elseif length(sp2) == 1
-            return sp2[1], "", sp[1]
+            return sp2[1][10:end], "", sp[1]
         elseif length(sp2) ==2 && length(sp)>0
-            return sp2[1], sp2[2], sp[end]
+            return sp2[1][10:end], sp2[2][10:end], sp[end]
         end
     end
 end
@@ -138,7 +138,7 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     ssh_create_dir(cluster_saving_directory)
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
-    sdir = """ dir = "$cluster_saving_directory" """
+    sdir = """dir = "$cluster_saving_directory" """
     println("Change saving directory: $sdir")
     change_saving_directory(local_code_path, "InputParameters.jl", sdir)
     

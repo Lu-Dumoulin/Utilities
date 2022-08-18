@@ -68,11 +68,11 @@ function getui(b)
 end
 
 function do_download(mem_pathcluster, mem_pathlocal)
-    # @distributed for i=1:length(mem_jobIDs)
-    Threads.@threads for i=1:length(mem_jobIDs)
+    # @distributed for i=1:length(mem_jobIDs) #Threads.@threads 
+    for i=1:length(mem_jobIDs)
         dir_clu = mem_pathcluster[i]
         dir_res = mem_pathlocal[i]
-        println("Thread $(Threads.threadid()) download $dir_clu into $dir_res") 
+        dir_clu*dir_res != "" ? println("Download $dir_clu into $dir_res") : println("Nothing to download")
         dir_clu*dir_res != "" ? downloadcl(dir_clu, dir_res) : nothing
     end
 end
