@@ -19,20 +19,20 @@ function getjobsinfo()
     for jobID in jobIDs
         idx = findfirst(isequal(jobID), mem_jobIDs)
         st = ""
-        if !isnothing(idx)
+        if !isnothing(idx) # If jobId already known
             if mem_pathlocal[idx] == ""
                 println(" Get and save all infos for: $jobID")
                 pathcluster, pathlocal, lastline = getinfoout(mem_pathout[idx])
-                push!(mem_pathcluster, pathcluster)
-                push!(mem_pathlocal, pathlocal)
+                mem_pathcluster[idx] = pathcluster
+                mem_pathlocal[idx] = pathlocal
                 st *= lastline*" \n"
             else
                 println(" Read last line of the .out of job: $jobID")
                 st *= readlastlineout(mem_pathout[idx])*" \n"
             end
-        else
+        else # First time jobId
             println(" Get and save path of .out file for: $jobID")
-            fout = getpathout(jobID)
+            fout = getpathout(jobID) # Search .out file
             if length(fout)>1
                 push!(mem_jobIDs, jobID)
                 push!(mem_pathout, fout)
