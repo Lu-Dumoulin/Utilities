@@ -6,6 +6,8 @@ usingpkg("RemoteFiles, OpenSSH_jll")
 username = "dumoulil"; host ="@baobab2.hpc.unige.ch"
 cluster_home_path = "/home/users/$(username[1])/$username/"
 
+local_utilities_path = normpath(string(@__DIR__,"/"))
+
 # Little function to execute a commande using SSh on the cluster
 @inline function runssh(cmd)
     return run(`ssh $username$host $cmd`)

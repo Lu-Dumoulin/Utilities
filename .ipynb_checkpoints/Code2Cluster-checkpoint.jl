@@ -56,20 +56,6 @@ function change_saving_directory(local_directory_path, jlfile, sdir)
     rm(local_directory_path*jlfilec)
 end
 
-# Read the last line of a `.out` file
-# Read only the last line, speed independant of the number of lines !
-function read_last_line(file)
-    open(file) do io
-        seekend(io) #add if Char(peek(io))== '\n' pos -2 otherwise pos -1
-        seek(io, position(io) - 2)
-        while Char(peek(io)) != '\n' && position(io)>=1
-            seek(io, position(io) - 1)
-        end
-        read(io, Char)
-        read(io, String)
-    end
-end
-
 # Generate the bash file
 # You have to fill the important lines first
 # By default execute julia file on one DP Ampere GPU with optimize compilation
@@ -126,27 +112,6 @@ function jobsinfo(local_saving_directory)
     println(longstring)
 end
 
-
-function splitpath(pathfn)
-    pospoint = findfirst(x->x=='.', pathfn)
-    path = ""
-    fn = ""
-    if pospoint != nothing
-        endpath = findlast(x->x=='/', pathfn)
-        path *= pathfn[1:endpath]
-        fn *= pathfn[endpath+1:end]
-    else
-        path *= pathfn
-        
-    end
-    return path, fn
-end
-
-function copylocalcode(dirc, ldir)
-    scp_up(dirc, ldir)
-end
-
-
 function getinfoout(pathout::String)
     sp = split(ssh("cat $pathout"), "\n", keepempty=false)
     sp2 = filter(startswith("path_"), sp)
@@ -164,8 +129,6 @@ function getinfoout(pathout::String)
 end
 
 function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/",  stime="0-00:30:00"; partitions="private-kruse-gpu")
-    
-    local_utilities_path = "D:/Utilities/"
     
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir

@@ -47,6 +47,26 @@ function pngstogif(dirpngs, dirgif, name, fps)
     FileIO.save(string(dirgif, name, ".gif"), imgs; fps = fps)
 end
 
+
+# Read the last line of a (`.out`) file
+# Read only the last line, speed independant of the number of lines !
+function read_last_line(file)
+    open(file) do io
+        seekend(io) #add if Char(peek(io))== '\n' pos -2 otherwise pos -1
+        seek(io, position(io) - 2)
+        while Char(peek(io)) != '\n' && position(io)>=1
+            seek(io, position(io) - 1)
+        end
+        read(io, Char)
+        read(io, String)
+    end
+end
+
+# Split a file path into path, filename
+function splitpath(pathfn)
+    return dirname(pathfn)*"/", basename(pathfn)
+end
+
 # # Move .ext from one dir to another one
 # for (root, dirs, files) in walkdir("N:/2D-corr/")
 #     for dir in dirs
