@@ -115,11 +115,12 @@ function download_dir(cluster_directory_path, local_directory_path)
     isdir(local_directory_path) ? nothing : mkpath(local_directory_path)
     list_of_local_subdirectories = readdir(local_directory_path)
     list_of_subdirectories = split(ssh("ls $cluster_directory_path"), "\n", keepempty=false)
-    Threads.@threads for subdirectory in list_of_subdirectories
+    for subdirectory in list_of_subdirectories #Threads.@threads 
         o = findfirst(subdirectory .== list_of_local_subdirectories)
         if o == nothing
             # isdefined(Main, :IJulia) ? IJulia.clear_output(true) : nothing
-            println("Thread $(Threads.threadid()) copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
+            # println("Thread $(Threads.threadid()) copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
+            println("Copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
             run(`scp -r $username$host:$cluster_directory_path$subdirectory $local_directory_path`)
         else
             download_dir(cluster_directory_path*subdirectory*"/", local_directory_path*subdirectory*"/")
