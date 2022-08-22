@@ -31,6 +31,18 @@ function splitpath(pathfn)
     return dirname(pathfn)*"/", basename(pathfn)
 end
 
+# function get_all_gif(dir)
+#     path_to_gifs = Vector{String}()
+#     for (root, dirs, files) in walkdir(dir)
+#         for file in files
+#             if endswith(file, ".gif")
+#                 push!(path_to_gifs, joinpath(root, file))
+#             end
+#         end
+#     end
+#     return path_to_gifs
+# end
+
 # # Move .ext from one dir to another one
 # for (root, dirs, files) in walkdir("N:/2D-corr/")
 #     for dir in dirs

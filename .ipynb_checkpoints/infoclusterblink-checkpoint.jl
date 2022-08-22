@@ -32,7 +32,7 @@ function getjobsinfo()
             end
         else # First time jobId
             println(" Get and save path of .out file for: $jobID")
-            fout = getpathout(jobID) # Search .out file
+            fout = getpathoutrunning(jobID)*string(jobID,".out") # Search .out file
             if length(fout)>1
                 push!(mem_jobIDs, jobID)
                 push!(mem_pathout, fout)
@@ -68,46 +68,20 @@ function getui(b)
 end
 
 function do_download(mem_pathcluster, mem_pathlocal)
-    # @distributed for i=1:length(mem_jobIDs) #Threads.@threads 
+    # Test if same path ?
     for i=1:length(mem_jobIDs)
         dir_clu = mem_pathcluster[i]
         dir_res = mem_pathlocal[i]
-        dir_clu*dir_res != "" ? println("Download $dir_clu into $dir_res") : println("Nothing to download")
+        dir_clu*dir_res == "" ? println("Nothing to download") : nothing
         dir_clu*dir_res != "" ? downloadcl(dir_clu, dir_res) : nothing
     end
 end
 
-# function getparentdir!(parent_dirs, pathclu, pathlocal)
-#     parent_clu = ""
-#     parent_loc = ""
-#     sl = length(pathlocal)
-#     sc = length(pathclu)
-#     s = minimum([sl, sc])
-#     idx = 0
-#     for i=0:s-1
-#         pathclu[end-i] != pathlocal[end-i] && break
-#         idx = i
-#     end
-#     idx -= findfirst(isequal('/'),pathlocal[end-idx+1:end])
-#     push!(parent_dirs, (pathclu[1:end-idx], pathlocal[1:end-idx]) )
-# end
-
-# function do_synch(mem_pathcluster, mem_pathlocal)
-#     parent_dirs = Vector{Tuple{String, String}}()
-#     for i=1:length(mem_jobIDs)
-#         getparentdir!(parent_dirs, mem_pathcluster[i], mem_pathlocal[i])
-#     end
-#     unique(parent_dirs)
-#     for i in parent_dirs
-#         println("  Synch $(i[1]) with $(i[2])  ")
-#     end
-# end
-
 w = Window()
 ui = Observable{Any}()
 b = Interact.button("Get jobs info"; value = 1)
-b2 = Interact.button("Dowmload files"; value = 1)
-# b3 = Interact.button("Synch parent directories"; value = 1)
+b2 = Interact.button("Download files"; value = 1)
+b3 = Interact.button("Download last job"; value = 0)
 
 map!(getui, ui, b)
 
@@ -115,9 +89,9 @@ on(b2) do b
      do_download(mem_pathcluster, mem_pathlocal)
 end
 
-# on(b3) do b
-#     do_synch(mem_pathcluster, mem_pathlocal)
-# end
+on(b3) do b
+    download_last_job()
+end
 
-# body!(w, dom"div"(hbox(b, b2, b3), ui))
-body!(w, dom"div"(hbox(b, b2), ui))
+
+body!(w, dom"div"(hbox(b, b2, b3), ui))

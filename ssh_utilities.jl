@@ -21,12 +21,12 @@ end
     println(readchomp(`ssh $username$host $cmd`))
 end
 
-@inline function squeue(; username=username)
-    printssh("squeue -u "*string(username))
+@inline function squeue(; username=username, opt="")
+    printssh("squeue -u "*string(username)*string(" ",opt))
 end
 
-@inline function rsqueue(; username=username)
-    ssh("squeue -u "*string(username))
+@inline function rsqueue(; username=username, opt="")
+    ssh("squeue -u "*string(username)*string(" ",opt))
 end
 
 @inline function scancel(num)
@@ -132,6 +132,7 @@ end
 # This function needs to be edited according to your need
 function downloadcl(cluster_directory="test/", local_directory_path="E:/test/")
     cluster_directory_path = cluster_directory[1:4] == "/hom" ? cluster_directory : cluster_home_path*cluster_directory
+    println("Download $cluster_directory_path into $local_directory_path")
     mkpath(local_directory_path)
     update_ext(cluster_directory_path, local_directory_path, ".csv")
     update_ext(cluster_directory_path, local_directory_path, ".out")
@@ -149,7 +150,7 @@ function history_IDs()
 end
 
 function readout(jobID)
-    pathout = findfile(string(jobID,".out"), cluster_home_path)
+    pathout = getpathout(jobID)
     # dircl, fn = splitpath(pathout)
     pathout == "" ? nothing : printssh("cat $pathout")
 end
@@ -170,7 +171,17 @@ end
 end
 
 @inline function getpathout(jobID)
-    return findfile(string(jobID,".out"), cluster_home_path)
+    pathout = split(ssh("sacct -j$jobID -u $username --format=WorkDir%100 -n"), keepempty=false)[1]*"/$jobID.out"
+    if get_size(pathout) == 0
+        println("No .out file")
+        return ""
+    else
+        return pathout
+    end
+end
+
+@inline function getpathoutrunning(jobID)
+    return splitpath(rsqueue(opt="-j$jobID --Format=STDOUT:100 -h"))[1]
 end
 
 @inline function readlastlineout(pathout::String)
@@ -182,5 +193,24 @@ function info_gpus()
 end
 
 function info_gpus_kruse()
-    printssh("squeue -partition=private-kruse-gpu")
+    printssh("squeue --nodes=gpu[020,030-031]")
+end
+
+function get_history_fout()
+    today = string(Dates.today() - Dates.Month(1))
+    st = filter!(x->(!endswith(x,"+") && !endswith(x,".0")),split(ssh("sacct -S $today -u $username --format=JobID,WorkDir%100 -n"), keepempty=false))
+    jobs = st[1:2:end]
+    pathout = st[2:2:end]
+    # check if .out exists
+    for i=1:length(jobs)
+        path_out = string(pathout[i])*"/"*string(jobs[i])*".out"
+        if get_size(path_out)!=0
+            pathout[i] = path_out
+        else 
+            jobs[i]="0"
+        end
+    end
+    filter!(x-> x!="0", jobs)
+    filter!(endswith(".out"), pathout)
+    return jobs, pathout
 end

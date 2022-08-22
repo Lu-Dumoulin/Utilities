@@ -59,7 +59,7 @@ end
 # Generate the bash file
 # You have to fill the important lines first
 # By default execute julia file on one DP Ampere GPU with optimize compilation
-function generate_bash(cluster_saving_directory_path, local_directory_path, julia_file_path, time; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU")
+function generate_bash(cluster_saving_directory_path, local_directory_path, julia_file_path, time; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C.sh")
     bsh1 = """
     #!/bin/env bash
     #SBATCH --partition=$partitions
@@ -76,40 +76,9 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
     bsh2 = "srun julia --optimize=3 "
     bsh = bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
 
-    open(local_directory_path*"C2C.sh", "w") do io
+    open(local_directory_path*sh_name, "w") do io
                write(io, bsh)
            end;
-end
-
-function jobsinfo(cluster_directory, local_saving_directory)
-    longstring = ""
-    mkpath(local_saving_directory)
-    cluster_full_directory = cluster_home_path*cluster_directory
-    update_ext(cluster_full_directory, local_saving_directory, ".out")
-    jobIDs = getjobids()
-
-    longstring *= rsqueue()
-    longstring *= "\n"
-    for jobID in sort!(jobIDs)
-        fout = string(local_saving_directory, jobID, ".out")
-        longstring *= isfile(fout) ? string(jobID," : ",read_last_line(fout)) : string(jobID, " : waiting \n")
-    end
-    return longstring
-end
-
-function jobsinfo(local_saving_directory)
-    longstring = rsqueue()
-    longstring *= "\n"
-    mkpath(local_saving_directory)
-    jobIDs = getjobids()
-    for jobID in sort!(jobIDs)
-        pathout = findfile(string(jobID,".out"), cluster_home_path)
-        dircl, fn = splitpath(pathout)
-        update_file(fn, dircl, local_saving_directory)
-        fout = string(local_saving_directory, jobID, ".out")
-        longstring *= isfile(fout) ? string(jobID," : ",read_last_line(fout)) : string(jobID, " : waiting \n")
-    end 
-    println(longstring)
 end
 
 function getinfoout(pathout::String)
@@ -128,6 +97,58 @@ function getinfoout(pathout::String)
     end
 end
 
+function download_JobID(JobID)
+    fout = getpathout(JobID)
+    if fout==""
+        println("Nothing to download")
+    else
+        cluster_directory, local_directory, _ = getinfoout(fout)
+        downloadcl(cluster_directory, local_directory)
+    end
+end
+
+function download_last_jobs(n=0)
+    nn = 0
+    if n < 0 
+        println("arg have to be positive: last-arg"); return nothing 
+    end
+    jobIDs = history_IDs()
+    njobs = length(jobIDs)
+    if njobs == 0 
+        println("No job this past month")
+        return nothing
+    elseif njobs <= n
+        nn=njobs-1
+    else 
+        nn= n 
+    end
+    for i in jobIDs[end-nn:end]
+        println("For job: $i")
+        download_JobID(i)
+    end
+end
+
+function download_last_job(n=0)
+    nn = 0
+    if n < 0 
+        println("arg have to be positive: last-arg"); return nothing 
+    end
+    jobIDs = history_IDs()
+    njobs = length(jobIDs)
+    if njobs == 0 
+        println("No job this past month")
+        return nothing
+    elseif njobs <= n
+        nn=njobs-1
+    else 
+        nn= n 
+    end
+    jobID = jobIDs[end-nn]
+    println("For job: $jobID")
+    download_JobID(jobID)
+end
+    
+
 function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/",  stime="0-00:30:00"; partitions="private-kruse-gpu")
     
     cluster_saving_directory = cluster_home_path*cluster_save_directory
@@ -144,11 +165,11 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     
     println("Generate bash file")
     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions)
-    println("""Upload .jl files from $local_utilities_path in $(cluster_home_path*"Code/Utilities/") """)
+    println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
-    println("Upload .jl files of $local_code_path in $cluster_code_directory")
+    println("Upload .jl files from $local_code_path to $cluster_code_directory")
     scp_up_jl(cluster_code_directory, local_code_path)
-    println("Upload C2C.sh from $local_code_path in $cluster_saving_directory")
+    println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
     scp_up_file(cluster_saving_directory, local_code_path*"C2C.sh")
     njob = ssh("cd $cluster_saving_directory && sbatch C2C.sh")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
