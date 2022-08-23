@@ -82,18 +82,22 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
 end
 
 function getinfoout(pathout::String)
-    sp = split(ssh("cat $pathout"), "\n", keepempty=false)
-    sp2 = filter(startswith("path_"), sp)
-    if length(sp)==0
-        return "", "", ""
-    else
-        if length(sp2) == 0
-            return "", "", sp[1]
-        elseif length(sp2) == 1
-            return sp2[1][10:end], "", sp[1]
-        elseif length(sp2) ==2 && length(sp)>0
-            return sp2[1][10:end], sp2[2][10:end], sp[end]
+    if is_file(pathout) == 1
+        sp = split(ssh("cat $pathout"), "\n", keepempty=false)
+        sp2 = filter(startswith("path_"), sp)
+        if length(sp)==0
+            return "", "", ""
+        else
+            if length(sp2) == 0
+                return "", "", sp[1]
+            elseif length(sp2) == 1
+                return sp2[1][10:end], "", sp[1]
+            elseif length(sp2) ==2 && length(sp)>0
+                return sp2[1][10:end], sp2[2][10:end], sp[end]
+            end
         end
+    else
+        return "", "", ""
     end
 end
 
@@ -149,7 +153,7 @@ function download_last_job(n=0)
 end
     
 
-function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/",  stime="0-00:30:00"; partitions="private-kruse-gpu")
+function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/",  stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000")
     
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
@@ -164,7 +168,7 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     change_saving_directory(local_code_path, "InputParameters.jl", sdir)
     
     println("Generate bash file")
-    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions)
+    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem)
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
     println("Upload .jl files from $local_code_path to $cluster_code_directory")

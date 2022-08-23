@@ -81,6 +81,14 @@ end
     return ssh("find $cluster_directory_path -name $filename")
 end
 
+@inline function is_file(cluster_file_path)
+    try
+        return ssh("""[[ -f $FILE_PATH ]] && echo "1" || echo "0" $cluster_file_path""")
+    catch
+        return "Issue"
+    end
+end
+
 @inline function get_size(cluster_file_path)
     try
         return tryparse(Int, ssh(`stat --printf="%s" $cluster_file_path`))

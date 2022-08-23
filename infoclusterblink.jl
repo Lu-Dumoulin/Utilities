@@ -23,6 +23,9 @@ function getjobsinfo()
             if mem_pathlocal[idx] == ""
                 println(" Get and save all infos for: $jobID")
                 pathcluster, pathlocal, lastline = getinfoout(mem_pathout[idx])
+                if pathcluster*pathlocal*lastline == ""
+                    println("In queue....")
+                end
                 mem_pathcluster[idx] = pathcluster
                 mem_pathlocal[idx] = pathlocal
                 st *= lastline*" \n"
