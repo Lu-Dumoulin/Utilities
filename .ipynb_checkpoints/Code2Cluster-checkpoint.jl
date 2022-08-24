@@ -169,8 +169,15 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     
     println("Generate bash file")
     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem)
-    println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-    scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+    if !Sys.isapple()
+        println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
+        scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+        println("Upload .jl files from $local_code_path to $cluster_code_directory")
+        scp_up_jl(cluster_code_directory, local_code_path)
+    else
+        println("Upload files from $local_code_path to $cluster_code_directory")
+        scp_up(cluster_code_directory, local_code_path)
+    end
     println("Upload .jl files from $local_code_path to $cluster_code_directory")
     scp_up_jl(cluster_code_directory, local_code_path)
     println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
