@@ -23,6 +23,7 @@ function book_a_gpu()
     local_code_path = normpath(string(@__DIR__,"/"))
     generate_bash(cluster_home_path*"Code/Utilities/", local_code_path, "do_nothing.jl", "0-12:00:00", sh_name="book_gpu.sh")
     generate_do_nothing()
+    sleep(2)
     cluster_saving_directory = cluster_home_path*"BookGPU/"
     ssh_create_dir(cluster_saving_directory)
     println("""Upload .jl files from $local_code_path in $(cluster_home_path*"Code/Utilities/") """)
@@ -31,6 +32,7 @@ function book_a_gpu()
     scp_up_file(cluster_saving_directory, local_code_path*"book_gpu.sh")
     njob = ssh("cd $cluster_saving_directory && sbatch book_gpu.sh")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
+    sleep(2)
     rm("book_gpu.sh")
     rm("do_nothing.jl")
     return njob
