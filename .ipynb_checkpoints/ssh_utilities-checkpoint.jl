@@ -83,7 +83,7 @@ end
 
 @inline function is_file(cluster_file_path)
     try
-        return ssh("""[[ -f $FILE_PATH ]] && echo "1" || echo "0" $cluster_file_path""")
+        return ssh("""[[ -f $cluster_file_path ]] && echo "1" || echo "0" """)
     catch
         return "Issue"
     end

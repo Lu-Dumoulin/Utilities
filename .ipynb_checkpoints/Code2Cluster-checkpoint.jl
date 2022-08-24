@@ -82,7 +82,7 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
 end
 
 function getinfoout(pathout::String)
-    if is_file(pathout) == 1
+    if is_file(pathout) == "1"
         sp = split(ssh("cat $pathout"), "\n", keepempty=false)
         sp2 = filter(startswith("path_"), sp)
         if length(sp)==0
