@@ -182,6 +182,6 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     scp_up_jl(cluster_code_directory, local_code_path)
     println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
     scp_up_file(cluster_saving_directory, local_code_path*"C2C.sh")
-    # njob = ssh("cd $cluster_saving_directory && sbatch C2C.sh")[end-7:end]
-    # println("Job submitted, the id is: ", njob) # print job number
+    njob = ssh("cd $cluster_saving_directory && sbatch C2C.sh")[end-7:end]
+    println("Job submitted, the id is: ", njob) # print job number
 end
