@@ -1,6 +1,6 @@
 include("Code2Cluster.jl")
 
-function generate_do_nothing()
+function generate_do_nothing(local_code_path)
     txt = """
     using CUDA
     
@@ -9,7 +9,7 @@ function generate_do_nothing()
     end
     
     """
-    open("do_nothing.jl", "w") do io
+    open(local_code_path*"do_nothing.jl", "w") do io
                write(io, txt)
            end;
 end
@@ -22,7 +22,7 @@ end
 function book_a_gpu()
     local_code_path = normpath(string(@__DIR__,"/"))
     generate_bash(cluster_home_path*"Code/Utilities/", local_code_path, "do_nothing.jl", "0-12:00:00", sh_name="book_gpu.sh")
-    generate_do_nothing()
+    generate_do_nothing(local_code_path)
     sleep(2)
     cluster_saving_directory = cluster_home_path*"BookGPU/"
     ssh_create_dir(cluster_saving_directory)
@@ -33,7 +33,7 @@ function book_a_gpu()
     njob = ssh("cd $cluster_saving_directory && sbatch book_gpu.sh")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
     sleep(2)
-    rm("book_gpu.sh")
-    rm("do_nothing.jl")
+    rm(local_code_path*"book_gpu.sh")
+    rm(local_code_path*"do_nothing.jl")
     return njob
 end
