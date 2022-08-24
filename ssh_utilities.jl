@@ -46,7 +46,15 @@ end
 end
 
 @inline function scp_up_jl(cluster_directory_path, local_directory_path)
-    run(`scp """$local_directory_path""""*.jl" $username$host:$cluster_directory_path`)
+    if Sys.isapple()
+        scp_up_jl_MOS(cluster_directory_path, local_directory_path)
+    else
+        run(`scp """$local_directory_path""""*.jl" $username$host:$cluster_directory_path`)
+    end
+end
+
+@inline function scp_up_jl_MOS(cluster_directory_path, local_directory_path)
+    run(`scp """$local_directory_path""""\*.jl" $username$host:$cluster_directory_path`)
 end
 
 @inline function scp_up_file(cluster_directory_path, local_file_path)
