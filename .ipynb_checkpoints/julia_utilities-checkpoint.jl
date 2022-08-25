@@ -8,6 +8,7 @@ using Pkg
         catch
             println("Installing $package ...")
             Pkg.add(package)
+            @eval using $(Symbol(package))
         end
     end
 end
