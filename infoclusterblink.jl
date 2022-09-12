@@ -71,10 +71,16 @@ function getui(b)
 end
 
 function do_download(mem_pathcluster, mem_pathlocal)
-    # Test if same path ?
-    for i=1:length(mem_jobIDs)
-        dir_clu = mem_pathcluster[i]
-        dir_res = mem_pathlocal[i]
+   dir_tuple = unique!([(mem_pathcluster[i], mem_pathlocal[i]) for i=1:length(mem_jobIDs)])
+    # for i=1:length(mem_jobIDs)
+    #     dir_clu = mem_pathcluster[i]
+    #     dir_res = mem_pathlocal[i]
+    #     dir_clu*dir_res == "" ? println("Nothing to download") : nothing
+    #     dir_clu*dir_res != "" ? downloadcl(dir_clu, dir_res) : nothing
+    # end
+    for i=1:length(dir_tuple)
+        dir_clu = dir_tuple[i][1]
+        dir_res = dir_tuple[i][2]
         dir_clu*dir_res == "" ? println("Nothing to download") : nothing
         dir_clu*dir_res != "" ? downloadcl(dir_clu, dir_res) : nothing
     end
