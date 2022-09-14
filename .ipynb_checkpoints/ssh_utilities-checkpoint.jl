@@ -230,3 +230,7 @@ function get_history_fout()
     filter!(endswith(".out"), pathout)
     return jobs, pathout
 end
+
+function ssh_disk(user=username)
+    printssh("beegfs-get-quota-home-scratch.sh $user")
+end
