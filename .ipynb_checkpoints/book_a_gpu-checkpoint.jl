@@ -15,7 +15,7 @@ function generate_do_nothing(local_code_path)
 end
 
 function is_booked()
-    return split(rsqueue(opt="--Format JobId --name book_gpu -h"), keepempty=false)
+    return split(ssh_squeue(opt="--Format JobId --name book_gpu -h"), keepempty=false)
 end
     
 
@@ -25,7 +25,7 @@ function book_a_gpu()
     generate_do_nothing(local_code_path)
     sleep(2)
     cluster_saving_directory = cluster_home_path*"BookGPU/"
-    ssh_create_dir(cluster_saving_directory)
+    ssh_mkdir(cluster_saving_directory)
     println("""Upload .jl files from $local_code_path in $(cluster_home_path*"Code/Utilities/") """)
     scp_up_jl(cluster_home_path*"Code/Utilities/", local_code_path)
     println(" Upload book_gpu.sh from $local_code_path in $cluster_saving_directory ")
