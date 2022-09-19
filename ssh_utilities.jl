@@ -139,7 +139,7 @@ function ssh_download_dir(cluster_directory_path, local_directory_path)
             println(" Copy $username$host:$cluster_directory_path$subdirectory into $local_directory_path")
             run(`scp -r $username$host:$cluster_directory_path$subdirectory $local_directory_path`)
         else
-            download_dir(cluster_directory_path*subdirectory*"/", local_directory_path*subdirectory*"/")
+            ssh_download_dir(cluster_directory_path*subdirectory*"/", local_directory_path*subdirectory*"/")
         end
     end
 end
