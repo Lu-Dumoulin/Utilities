@@ -47,7 +47,7 @@ end
 
 @inline function scp_up_jl(cluster_directory_path, local_directory_path)
     if Sys.isapple()
-        ssh_scp_up_jl_MOS(cluster_directory_path, local_directory_path)
+        scp_up_jl_MOS(cluster_directory_path, local_directory_path)
     else
         run(`scp """$local_directory_path""""*.jl" $username$host:$cluster_directory_path`)
     end
@@ -120,7 +120,7 @@ end
 @inline function ssh_update_file(filename, cluster_directory_path, local_directory_path)
     if fn != "" && ssh_filesize(cluster_directory_path*filename) != filesize(local_directory_path*filename)
         println("update $username$host:$(cluster_directory_path*filename) to $(local_directory_path*filename)")
-        ssh_scp_down(cluster_directory_path*filename, local_directory_path)
+        scp_down(cluster_directory_path*filename, local_directory_path)
     end
 end
 
@@ -168,7 +168,7 @@ end
 function ssh_readout(jobID)
     pathout = ssh_getpathout(jobID)
     # dircl, fn = splitpath(pathout)
-    pathout == "" ? nothing : printssh("cat $pathout")
+    pathout == "" ? nothing : print_ssh("cat $pathout")
 end
 
 function ssh_readlastout()
