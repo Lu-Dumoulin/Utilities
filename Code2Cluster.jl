@@ -82,7 +82,7 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
 end
 
 function getinfoout(pathout::String)
-    if is_file(pathout) == "1"
+    if ssh_isfile(pathout) == "1"
         sp = split(ssh("cat $pathout"), "\n", keepempty=false)
         sp2 = filter(startswith("path_"), sp)
         if length(sp)==0
@@ -102,12 +102,12 @@ function getinfoout(pathout::String)
 end
 
 function download_JobID(JobID)
-    fout = getpathout(JobID)
+    fout = ssh_getpathout(JobID)
     if fout==""
         println("Nothing to download")
     else
         cluster_directory, local_directory, _ = getinfoout(fout)
-        downloadcl(cluster_directory, local_directory)
+        ssh_download(cluster_directory, local_directory)
     end
 end
 
@@ -116,7 +116,7 @@ function download_last_jobs(n=0)
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = history_IDs()
+    jobIDs = ssh_history_IDs()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -137,7 +137,7 @@ function download_last_job(n=0)
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = history_IDs()
+    jobIDs = ssh_history_IDs()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -158,9 +158,9 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
-    ssh_create_dir(cluster_home_path*"Code/")
-    ssh_create_dir(cluster_code_directory)
-    ssh_create_dir(cluster_saving_directory)
+    ssh_mkdir(cluster_home_path*"Code/")
+    ssh_mkdir(cluster_code_directory)
+    ssh_mkdir(cluster_saving_directory)
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """

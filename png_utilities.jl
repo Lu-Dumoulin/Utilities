@@ -20,9 +20,9 @@ function pngstogif(dirpngs, dirgif, name, fps)
     list = readdir(dirpngs)
     a = size(load(string(dirpngs,list[1])))
     l = length(list)
-    if l>250
-        rang = Int.(floor.(range(1, l, 201)))
-        global l = 201
+    if l>150
+        rang = Int.(floor.(range(1, l, 101)))
+        global l = 101
     else
         rang = 1:l
     end

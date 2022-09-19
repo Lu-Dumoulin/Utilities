@@ -12,7 +12,7 @@ global longs = Observable{Any}("tessttt")
 function getjobsinfo()
     longstring = ""
     
-    jobIDs = getjobids()
+    jobIDs = ssh_getjobids()
 
     longstring *= ssh("squeue --me")
     longstring *= "\n"
@@ -31,11 +31,11 @@ function getjobsinfo()
                 st *= lastline*" \n"
             else
                 println(" Read last line of the .out of job: $jobID")
-                st *= readlastlineout(mem_pathout[idx])*" \n"
+                st *= ssh_readlastlineout(mem_pathout[idx])*" \n"
             end
         else # First time jobId
             println(" Get and save path of .out file for: $jobID")
-            fout = getpathoutrunning(jobID)*string(jobID,".out") # Search .out file
+            fout = ssh_getpathoutrunning(jobID)*string(jobID,".out")
             if length(fout)>1
                 push!(mem_jobIDs, jobID)
                 push!(mem_pathout, fout)
@@ -82,7 +82,7 @@ function do_download(mem_pathcluster, mem_pathlocal)
         dir_clu = dir_tuple[i][1]
         dir_res = dir_tuple[i][2]
         dir_clu*dir_res == "" ? println("Nothing to download") : nothing
-        dir_clu*dir_res != "" ? downloadcl(dir_clu, dir_res) : nothing
+        dir_clu*dir_res != "" ? ssh_download(dir_clu, dir_res) : nothing
     end
 end
 
