@@ -16,13 +16,13 @@ function showgif(filename)
 end
 
 # Convert pngs into gif file
-function pngstogif(dirpngs, dirgif, name, fps)
+function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
     list = readdir(dirpngs)
     a = size(load(string(dirpngs,list[1])))
     l = length(list)
-    if l>150
-        rang = Int.(floor.(range(1, l, 101)))
-        global l = 101
+    if l>Nimg
+        rang = Int.(floor.(range(1, l, Nimg)))
+        global l = Nimg
     else
         rang = 1:l
     end

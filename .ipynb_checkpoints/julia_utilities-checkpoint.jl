@@ -57,3 +57,37 @@ end
 #         end
 #     end
 # end
+
+
+using DelimitedFiles, CSV, DataFrames
+
+function generate_csv(dir, listname, listtab)
+    isdir(dir) ? nothing : mkpath(dir)
+    isfile(dir*"DF.csv") && return nothing
+    
+    ntab = length(listtab)
+    nsim = 1
+    for i=1:ntab
+        nsim *= length(listtab[i])
+    end
+    tabid = 1:nsim
+    
+    df = DataFrame(zeros(nsim, length(listname)), listname)
+
+    df[!, :ID] .= tabid
+
+    count = 1
+
+    for i=1:length(listtab)
+        if length(listtab[i]) == 1
+            df[!, listname[i+1]] .= listtab[i][1]
+        else
+            for j=1:Int(nsim/count)
+                df[(j-1)*count+1:j*count, listname[i+1]] .= listtab[i][(j-1)%length(listtab[i])+1]
+            end
+            count *= length(listtab[i])
+        end
+    end
+    
+    CSV.write(joinpath(dir,"DF.csv"), df)
+end
