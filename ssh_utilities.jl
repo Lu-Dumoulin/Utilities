@@ -1,9 +1,7 @@
 include("julia_utilities.jl")
 usingpkg("RemoteFiles, OpenSSH_jll")
 
-# Username and host for ssh connection
-# the host is the remote server name, I added the '@' for simplicity
-username = "dumoulil"; host ="@baobab2.hpc.unige.ch"
+include("ssh_login.jl")
 cluster_home_path = "/home/users/$(username[1])/$username/"
 
 local_utilities_path = normpath(string(@__DIR__,"/"))
