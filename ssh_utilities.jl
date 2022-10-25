@@ -51,6 +51,10 @@ end
     end
 end
 
+@inline function scp_up_ext(cluster_directory_path, local_directory_path, ext)
+    run(`scp """$local_directory_path""""*.$ext" $username$host:$cluster_directory_path`)
+end
+
 @inline function scp_up_jl_MOS(cluster_directory_path, local_directory_path)
     run(`scp """$local_directory_path""""\*.jl" $username$host:$cluster_directory_path`)
 end
@@ -74,7 +78,7 @@ end
 
 @inline function ssh_getjobids()
     jobIDs=[]
-    for i in split(ssh_squeue(), keepempty=false)
+    for i in split(ssh_squeue(opt="--Format JobID"), keepempty=false)
         if length(string(i)) > 6
             b = tryparse(Int, string(i))
             b != nothing ? append!(jobIDs, b) :  nothing
@@ -231,4 +235,8 @@ end
 
 function ssh_disk(user=username)
     print_ssh("beegfs-get-quota-home-scratch.sh $user")
+end
+
+function ssh_seff(jobID)
+    print_ssh("seff $jobID")
 end

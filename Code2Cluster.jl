@@ -1,5 +1,5 @@
 include("ssh_utilities.jl")
-usingpkg("JSON, Markdown, Dates")
+usingpkg("JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames")
 
 # It is necessary to use SSH key login, which removes the need for a password for each login, thus ensuring a password-less, automatic login process
 # To do that use
@@ -81,6 +81,28 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
            end;
 end
 
+function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh")
+    bsh1 = """
+    #!/bin/env bash
+    #SBATCH --array=1-$Njob
+    #SBATCH --partition=$partitions
+    #SBATCH --time=$time
+    #SBATCH --gpus=ampere:1
+    #SBATCH --constraint=$constraint
+    #SBATCH --output=%J.out
+    #SBATCH --mem=3000
+
+    module load Julia
+
+    cd """
+    bsh2 = "srun julia --optimize=3 "
+    bsh = bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
+
+    open(local_directory_path*sh_name, "w") do io
+               write(io, bsh)
+           end;
+end
+
 function getinfoout(pathout::String)
     if ssh_isfile(pathout) == "1"
         sp = split(ssh("cat $pathout"), "\n", keepempty=false)
@@ -153,7 +175,7 @@ function download_last_job(n=0)
 end
     
 
-function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/",  stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh")
     
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
@@ -168,7 +190,7 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
     change_saving_directory(local_code_path, "InputParameters.jl", sdir)
     
     println("Generate bash file")
-    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem)
+    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
     if !Sys.isapple()
         println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
         scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
@@ -179,7 +201,81 @@ function runmycode(local_code_path="D:/Code/.../", julia_filename="something.jl"
         scp_up(cluster_code_directory, local_code_path)
     end
     println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
-    scp_up_file(cluster_saving_directory, local_code_path*"C2C.sh")
-    njob = ssh("cd $cluster_saving_directory && sbatch C2C.sh")[end-7:end]
+    scp_up_file(cluster_saving_directory, local_code_path*sh_name)
+    njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end
+
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF.csv"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C_array.sh")
+    
+    @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
+    
+    cluster_saving_directory = cluster_home_path*cluster_save_directory
+    cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
+    
+    ssh_mkdir(cluster_home_path*"Code/")
+    ssh_mkdir(cluster_code_directory)
+    ssh_mkdir(cluster_saving_directory)
+    cluster_julia_file_path = cluster_code_directory*julia_filename
+    
+    sdir = """dir = "$cluster_saving_directory" """
+    println("Change saving directory: $sdir")
+    change_saving_directory(local_code_path, "InputParameters.jl", sdir)
+    
+    println("Generate bash file")
+    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name)
+    if !Sys.isapple()
+        println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
+        scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+        println("Upload .jl files from $local_code_path to $cluster_code_directory")
+        scp_up_jl(cluster_code_directory, local_code_path)
+        println("Upload .csv file from $local_code_path to $cluster_code_directory")
+        scp_up_ext(cluster_code_directory, local_code_path, "csv")
+    else
+        println("Upload files from $local_code_path to $cluster_code_directory")
+        scp_up(cluster_code_directory, local_code_path)
+    end
+    println("Upload $sh_name from $local_code_path to $cluster_saving_directory")
+    scp_up_file(cluster_saving_directory, local_code_path*sh_name)
+    njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
+    println("Job submitted, the id is: ", njob) # print job number
+end
+
+# Aborted solution
+# function runmyDF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF"; partitions="private-kruse-gpu", mem="3000")
+    
+#     @show Njob = nrow(CSV.read(joinpath(local_code_path,"$df_name.csv"), DataFrame))
+#     sh_name = string(df_name,".sh")
+    
+#     cluster_saving_directory = cluster_home_path*cluster_save_directory
+#     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
+    
+#     ssh_mkdir(cluster_home_path*"Code/")
+#     ssh_mkdir(cluster_code_directory)
+#     ssh_mkdir(cluster_saving_directory)
+#     cluster_julia_file_path = cluster_code_directory*julia_filename
+    
+#     sdir = """dir = "$cluster_saving_directory" """
+#     println("Change saving directory: $sdir")
+#     change_saving_directory(local_code_path, "InputParameters.jl", sdir)
+    
+#     println("Generate bash file")
+#     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
+#     if !Sys.isapple()
+#         println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
+#         scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+#         println("Upload .jl files from $local_code_path to $cluster_code_directory")
+#         scp_up_jl(cluster_code_directory, local_code_path)
+#         println("Upload $df_name.csv files from $local_code_path to $cluster_code_directory")
+#         scp_up(cluster_code_directory*"$df_name.csv/", local_code_path)
+#     else
+#         println("Upload files from $local_code_path to $cluster_code_directory")
+#         scp_up(cluster_code_directory, local_code_path)
+#     end
+#     println("Upload $sh_name from $local_code_path to $cluster_saving_directory")
+#     scp_up_file(cluster_saving_directory, local_code_path*sh_name)
+#     for i=1:Njob
+#         njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
+#         println("Job submitted, the id is: ", njob) # print job number
+#     end
+# end
