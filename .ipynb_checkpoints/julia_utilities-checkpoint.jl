@@ -74,7 +74,7 @@ function generate_csv(dir, listname, listtab)
     
     df = DataFrame(zeros(nsim, length(listname)), listname)
 
-    df[!, :ID] .= tabid
+    df[!, :fn] .= tabid
 
     count = 1
 

@@ -84,7 +84,7 @@ end
 function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh")
     bsh1 = """
     #!/bin/env bash
-    #SBATCH --array=1-$Njob
+    #SBATCH --array=1-$Njob%20
     #SBATCH --partition=$partitions
     #SBATCH --time=$time
     #SBATCH --gpus=ampere:1
@@ -231,6 +231,8 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
         scp_up_jl(cluster_code_directory, local_code_path)
         println("Upload .csv file from $local_code_path to $cluster_code_directory")
         scp_up_ext(cluster_code_directory, local_code_path, "csv")
+        println("Upload .csv file from $local_code_path to $cluster_saving_directory")
+        scp_up_ext(cluster_saving_directory, local_code_path, "csv")
     else
         println("Upload files from $local_code_path to $cluster_code_directory")
         scp_up(cluster_code_directory, local_code_path)

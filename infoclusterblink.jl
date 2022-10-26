@@ -14,7 +14,7 @@ function getjobsinfo()
     
     jobIDs = ssh_getjobids()
 
-    longstring *= ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed -r")
+    longstring *= ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed --array-unique")
     longstring *= "\n"
     for jobID in jobIDs
         idx = findfirst(isequal(jobID), mem_jobIDs)
