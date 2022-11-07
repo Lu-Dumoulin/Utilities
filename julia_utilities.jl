@@ -90,4 +90,5 @@ function generate_csv(dir, listname, listtab, name="DF")
     end
     
     CSV.write(joinpath(dir,name*".csv"), df)
+    return nsim
 end
