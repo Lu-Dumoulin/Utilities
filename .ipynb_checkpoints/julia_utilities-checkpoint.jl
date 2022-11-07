@@ -62,6 +62,7 @@ end
 using DelimitedFiles, CSV, DataFrames
 
 function generate_csv(dir, listname, listtab, name="DF")
+    push!(listname, "fn")
     isdir(dir) ? nothing : mkpath(dir)
     isfile(dir*name*".csv") && return nothing
     
