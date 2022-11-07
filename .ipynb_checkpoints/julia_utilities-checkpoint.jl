@@ -62,7 +62,6 @@ end
 using DelimitedFiles, CSV, DataFrames
 
 function generate_csv(dir, listname, listtab, name="DF")
-    push!(listname, "fn")
     isdir(dir) ? nothing : mkpath(dir)
     isfile(dir*name*".csv") && return nothing
     
@@ -73,18 +72,18 @@ function generate_csv(dir, listname, listtab, name="DF")
     end
     tabid = 1:nsim
     
-    df = DataFrame(zeros(nsim, length(listname)), listname)
+    df = DataFrame([[listtab[i][1] for _ in 1:nsim ] for i = 1:length(listname)] , listname)
 
-    df[!, :fn] .= tabid
+    insertcols!(df, 1, :fn => tabid)
 
     count = 1
 
     for i=1:length(listtab)
         if length(listtab[i]) == 1
-            df[!, listname[i+1]] .= listtab[i][1]
+            df[!, listname[i]] .= listtab[i][1]
         else
             for j=1:Int(nsim/count)
-                df[(j-1)*count+1:j*count, listname[i+1]] .= listtab[i][(j-1)%length(listtab[i])+1]
+                df[(j-1)*count+1:j*count, listname[i]] .= listtab[i][(j-1)%length(listtab[i])+1]
             end
             count *= length(listtab[i])
         end
