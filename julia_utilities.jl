@@ -61,9 +61,9 @@ end
 
 using DelimitedFiles, CSV, DataFrames
 
-function generate_csv(dir, listname, listtab)
+function generate_csv(dir, listname, listtab, name="DF")
     isdir(dir) ? nothing : mkpath(dir)
-    isfile(dir*"DF.csv") && return nothing
+    isfile(dir*name*".csv") && return nothing
     
     ntab = length(listtab)
     nsim = 1
@@ -89,5 +89,5 @@ function generate_csv(dir, listname, listtab)
         end
     end
     
-    CSV.write(joinpath(dir,"DF.csv"), df)
+    CSV.write(joinpath(dir,name*".csv"), df)
 end
