@@ -17,7 +17,7 @@ end
 
 # Convert pngs into gif file
 function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
-    list = readdir(dirpngs)
+    list = filter(endswith(".png"), readdir(dirpngs))
     a = size(load(string(dirpngs,list[1])))
     l = length(list)
     if l>Nimg

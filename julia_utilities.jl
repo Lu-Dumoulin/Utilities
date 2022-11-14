@@ -63,7 +63,7 @@ using DelimitedFiles, CSV, DataFrames
 
 function generate_csv(dir, listname, listtab, name="DF")
     isdir(dir) ? nothing : mkpath(dir)
-    isfile(dir*name*".csv") && return nothing
+    # isfile(dir*"/"*name*".csv") && return nothing
     
     ntab = length(listtab)
     nsim = 1
