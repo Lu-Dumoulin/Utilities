@@ -44,6 +44,19 @@ function get_all_ext(dir; ext=".gif")
     return path_to_exts
 end
 
+function get_all_dir_ext(dir="/home/"; ext=".gif")
+    path_to_exts = Vector{String}()
+    for (root, dirs, files) in walkdir(dir)
+        for file in files
+            if endswith(file, ext)
+                push!(path_to_exts, joinpath(root))
+                break
+            end
+        end
+    end
+    return path_to_exts
+end
+
 # # Move .ext from one dir to another one
 # for (root, dirs, files) in walkdir("N:/2D-corr/")
 #     for dir in dirs
