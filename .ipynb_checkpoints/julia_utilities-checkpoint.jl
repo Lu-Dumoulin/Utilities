@@ -13,6 +13,8 @@ using Pkg
     end
 end
 
+usingpkg("CSV")
+
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
 function read_last_line(file)
