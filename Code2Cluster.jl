@@ -164,7 +164,7 @@ function download_last_job(n=0)
 end
     
 
-function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl")
     
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
@@ -176,26 +176,22 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     
     sdir = """dir = "$cluster_saving_directory" """
     println("Change saving directory: $sdir")
-    change_saving_directory(local_code_path, "InputParameters.jl", sdir)
+    change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
-    if !Sys.isapple()
-        println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-        scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
-        println("Upload .jl files from $local_code_path to $cluster_code_directory")
-        scp_up_jl(cluster_code_directory, local_code_path)
-    else
-        println("Upload files from $local_code_path to $cluster_code_directory")
-        scp_up(cluster_code_directory, local_code_path)
-    end
+    println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
+    scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+    println("Upload .jl files from $local_code_path to $cluster_code_directory")
+    scp_up_jl(cluster_code_directory, local_code_path)
+
     println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
     scp_up_file(cluster_saving_directory, local_code_path*sh_name)
     njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF.csv"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C_array.sh")
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF.csv"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl")
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     
@@ -209,23 +205,20 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     
     sdir = """dir = "$cluster_saving_directory" """
     println("Change saving directory: $sdir")
-    change_saving_directory(local_code_path, "InputParameters.jl", sdir)
+    change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
     generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name)
-    if !Sys.isapple()
-        println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-        scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
-        println("Upload .jl files from $local_code_path to $cluster_code_directory")
-        scp_up_jl(cluster_code_directory, local_code_path)
-        println("Upload .csv file from $local_code_path to $cluster_code_directory")
-        scp_up_ext(cluster_code_directory, local_code_path, "csv")
-        println("Upload .csv file from $local_code_path to $cluster_saving_directory")
-        scp_up_ext(cluster_saving_directory, local_code_path, "csv")
-    else
-        println("Upload files from $local_code_path to $cluster_code_directory")
-        scp_up(cluster_code_directory, local_code_path)
-    end
+ 
+    println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
+    scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+    println("Upload .jl files from $local_code_path to $cluster_code_directory")
+    scp_up_jl(cluster_code_directory, local_code_path)
+    println("Upload .csv file from $local_code_path to $cluster_code_directory")
+    scp_up_ext(cluster_code_directory, local_code_path, "csv")
+    println("Upload .csv file from $local_code_path to $cluster_saving_directory")
+    scp_up_ext(cluster_saving_directory, local_code_path, "csv")
+
     println("Upload $sh_name from $local_code_path to $cluster_saving_directory")
     scp_up_file(cluster_saving_directory, local_code_path*sh_name)
     njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
