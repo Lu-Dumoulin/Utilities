@@ -13,7 +13,7 @@ using Pkg
     end
 end
 
-usingpkg("CSV")
+usingpkg("DelimitedFiles, CSV, DataFrames")
 
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
@@ -72,9 +72,6 @@ end
 #         end
 #     end
 # end
-
-
-using DelimitedFiles, CSV, DataFrames
 
 function generate_csv(dir, listname, listtab, name="DF")
     isdir(dir) ? nothing : mkpath(dir)

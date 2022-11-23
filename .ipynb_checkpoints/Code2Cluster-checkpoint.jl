@@ -56,7 +56,7 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
     #SBATCH --gpus=ampere:1
     #SBATCH --constraint=$constraint
     #SBATCH --output=%J.out
-    #SBATCH --mem=3000
+    #SBATCH --mem=$mem
 
     module load Julia
 
@@ -79,7 +79,7 @@ function generate_bash_array(cluster_saving_directory_path, local_directory_path
     #SBATCH --gpus=ampere:1
     #SBATCH --constraint=$constraint
     #SBATCH --output=%J.out
-    #SBATCH --mem=3000
+    #SBATCH --mem=$mem
 
     module load Julia
 
@@ -224,42 +224,3 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end
-
-# Aborted solution
-# function runmyDF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF"; partitions="private-kruse-gpu", mem="3000")
-    
-#     @show Njob = nrow(CSV.read(joinpath(local_code_path,"$df_name.csv"), DataFrame))
-#     sh_name = string(df_name,".sh")
-    
-#     cluster_saving_directory = cluster_home_path*cluster_save_directory
-#     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
-    
-#     ssh_mkdir(cluster_home_path*"Code/")
-#     ssh_mkdir(cluster_code_directory)
-#     ssh_mkdir(cluster_saving_directory)
-#     cluster_julia_file_path = cluster_code_directory*julia_filename
-    
-#     sdir = """dir = "$cluster_saving_directory" """
-#     println("Change saving directory: $sdir")
-#     change_saving_directory(local_code_path, "InputParameters.jl", sdir)
-    
-#     println("Generate bash file")
-#     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
-#     if !Sys.isapple()
-#         println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-#         scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
-#         println("Upload .jl files from $local_code_path to $cluster_code_directory")
-#         scp_up_jl(cluster_code_directory, local_code_path)
-#         println("Upload $df_name.csv files from $local_code_path to $cluster_code_directory")
-#         scp_up(cluster_code_directory*"$df_name.csv/", local_code_path)
-#     else
-#         println("Upload files from $local_code_path to $cluster_code_directory")
-#         scp_up(cluster_code_directory, local_code_path)
-#     end
-#     println("Upload $sh_name from $local_code_path to $cluster_saving_directory")
-#     scp_up_file(cluster_saving_directory, local_code_path*sh_name)
-#     for i=1:Njob
-#         njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
-#         println("Job submitted, the id is: ", njob) # print job number
-#     end
-# end
