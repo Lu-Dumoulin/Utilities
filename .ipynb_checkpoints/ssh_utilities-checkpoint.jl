@@ -43,25 +43,19 @@ end
     run(`scp """$local_directory_path""""*" $username$host:$cluster_directory_path`)
 end
 
-@inline function scp_up_jl(cluster_directory_path, local_directory_path)
-    if Sys.isapple()
-        scp_up_jl_MOS(cluster_directory_path, local_directory_path)
-    else
-        run(`scp """$local_directory_path""""*.jl" $username$host:$cluster_directory_path`)
-    end
-end
-
-@inline function scp_up_ext(cluster_directory_path, local_directory_path, ext)
-    run(`scp """$local_directory_path""""*.$ext" $username$host:$cluster_directory_path`)
-end
-
-@inline function scp_up_jl_MOS(cluster_directory_path, local_directory_path)
-    run(`scp """$local_directory_path""""\*.jl" $username$host:$cluster_directory_path`)
-end
-
 @inline function scp_up_file(cluster_directory_path, local_file_path)
     run(`scp $local_file_path $username$host:$cluster_directory_path`)
 end
+
+@inline function scp_up_ext(cluster_directory_path, local_directory_path, ext)
+    listfile = filter(endswith(ext), readdir(local_directory_path))
+    for i in listfile
+        scp_up_file(cluster_directory_path, local_directory_path*i)
+    end
+end
+
+@inline scp_up_jl(cluster_directory_path, local_directory_path) = scp_up_ext(cluster_directory_path, local_directory_path, ".jl")
+
 
 @inline function ssh_mkdir(cluster_directory_path)
     if ssh("test -d $cluster_directory_path  && echo true || test ! -d $cluster_directory_path") == "true"

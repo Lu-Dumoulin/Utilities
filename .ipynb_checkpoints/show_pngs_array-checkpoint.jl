@@ -8,7 +8,8 @@
                                                                                                                                                                                                                                                                                                                    
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ/DF.csv"
+# path_to_csv = "F:/2D_P_Q_PQ/DF.csv"
+path_to_csv = "F:/Asters/array1/"*"DF.csv"
 # Height of the picture to show on your screen in px (Integer)
 image_height = 2000
 
