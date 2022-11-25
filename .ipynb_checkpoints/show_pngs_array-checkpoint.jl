@@ -8,9 +8,9 @@
                                                                                                                                                                                                                                                                                                                    
 # Enter:
 # Path to csv file
-# path_to_csv = "F:/2D_P_Q_PQ/DF.csv"
-path_to_csv = "F:/Asters/array1/"*"DF.csv"
-# Height of the picture to show on your screen in px (Integer)
+path_to_csv = "F:/2D_P_Q_PQ_3/DF.csv"
+# path_to_csv = "F:/Asters/array1/"*"DF.csv"
+# # Height of the picture to show on your screen in px (Integer)
 image_height = 2000
 
 
@@ -27,6 +27,8 @@ usingpkg("PyPlot, JLD, Printf, FixedPointNumbers, FileIO, Base64, Colors, Images
 
 dir, name_csv = splitpath(path_to_csv)
 
+screen_size = displaysize()
+maximal_size = minimum(screen_size)
 he = string(image_height, "px")
 hh = string(image_height+100, "px")
 ww = floor(Int, image_height*1.25)
@@ -59,7 +61,8 @@ function showgifb(filename; h=he)
 end
 
 Ncol = ncol(df)
-var_list = names(df[:,2:end])
+# var_list = names(df[:,2:end])
+var_list = names(df[:,setdiff(names(df), [:fn])])
 tab_list = [ sort!(unique(df[:,i])) for i in var_list]
 
 sl_list = []

@@ -73,10 +73,8 @@ end
 #     end
 # end
 
-function generate_csv(dir, listname, listtab, name="DF")
-    isdir(dir) ? nothing : mkpath(dir)
-    # isfile(dir*"/"*name*".csv") && return nothing
-    
+function generate_dataframe(listname, listtab; fn="")
+    println("Generate DataFrame")
     ntab = length(listtab)
     nsim = 1
     for i=1:ntab
@@ -85,9 +83,7 @@ function generate_csv(dir, listname, listtab, name="DF")
     tabid = 1:nsim
     
     df = DataFrame([[listtab[i][1] for _ in 1:nsim ] for i = 1:length(listname)] , listname)
-
-    insertcols!(df, 1, :fn => tabid)
-
+    
     count = 1
 
     for i=1:length(listtab)
@@ -100,7 +96,30 @@ function generate_csv(dir, listname, listtab, name="DF")
             count *= length(listtab[i])
         end
     end
-    
+    if fn != "NO"
+        insertcols!(df, 1, :fn => fn.*string.(tabid))
+    end
+    println("   Number of rows: $nsim")
+    return df
+end
+
+function generate_csv(dir, listname, listtab, name="DF"; fn="")
+    isdir(dir) ? nothing : mkpath(dir)
+    df = generate_dataframe(listname, listtab, fn=fn)
+    println("Right DataFrame")
     CSV.write(joinpath(dir,name*".csv"), df)
-    return nsim
+end
+
+function displaysize()
+    size = Vector{Int}()
+    if Sys.iswindows()
+        for i in split(readchomp(`wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`))
+            isnothing(tryparse(Int, i)) ? nothing : push!(size, parse(Int,i))
+        end
+        return size
+    end
+    if Sys.islinux()
+    end
+    if Sys.isapple()
+    end
 end
