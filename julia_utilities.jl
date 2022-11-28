@@ -13,7 +13,7 @@ using Pkg
     end
 end
 
-usingpkg("DelimitedFiles, CSV, DataFrames")
+usingpkg("DelimitedFiles, CSV, DataFrames, Makie")
 
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
@@ -117,9 +117,7 @@ function displaysize()
             isnothing(tryparse(Int, i)) ? nothing : push!(size, parse(Int,i))
         end
         return size
-    end
-    if Sys.islinux()
-    end
-    if Sys.isapple()
+    else
+        return [Makie.primary_resolution()[1], Makie.primary_resolution()[2]]
     end
 end
