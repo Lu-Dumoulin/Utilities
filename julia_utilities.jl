@@ -59,20 +59,6 @@ function get_all_dir_ext(dir="/home/"; ext=".gif")
     return path_to_exts
 end
 
-# # Move .ext from one dir to another one
-# for (root, dirs, files) in walkdir("N:/2D-corr/")
-#     for dir in dirs
-#         mkpath(replace(joinpath(root, dir), "N:/" => "F:/"))
-#     end
-#     for file in files
-#         if endswith(file, ".csv")
-#             from = joinpath(root, file)
-#             to = replace(from, "N:/" => "F:/")
-#             mv(from, to, force=true)
-#         end
-#     end
-# end
-
 function generate_dataframe(listname, listtab; fn="")
     println("Generate DataFrame")
     ntab = length(listtab)
@@ -120,4 +106,30 @@ function displaysize()
     else
         return [Makie.primary_resolution()[1], Makie.primary_resolution()[2]]
     end
+end
+
+function concatenate_expressions(e1, e2)
+    return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))
+end
+
+# For indexing GPU kernel: @indexing_XD with X the dimension of your grid
+macro indexing_1D() 
+    esc(quote
+        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    end)
+end
+
+macro indexing_2D() 
+    esc(quote
+        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+        j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
+    end)
+end
+
+macro indexing_3D() 
+    esc(quote
+        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+        j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
+        k = (blockIdx().z - 1) * blockDim().z + threadIdx().z
+    end)
 end
