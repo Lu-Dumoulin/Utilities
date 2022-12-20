@@ -5,10 +5,10 @@
  #             #  #   #     #       #######    #    #     #  
  #     # #     #   # #      #       #     #    #    #     #   
   #####   #####     #       #       #     #    #    #     #  
-                                                                                                                                                                                                                                                                                                                   
+
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ_6/DF.csv"
+path_to_csv = "F:/2D_P_Q_PQ_5/DF.csv"
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
 # ██╔══██╗██╔═══██╗    ████╗  ██║██╔═══██╗╚══██╔══╝    ████╗ ████║██╔═══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝    ██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║
@@ -173,7 +173,7 @@ function getui(fn, radio_dir, radio_png, sl)
     dirf *= radio_dir
     if isdir(dirf) && length(readdir(dirf)) > 0
         if radio_png == "PNG"
-            global lpict = readdir(dirf)
+            global lpict = filter!(endswith(".png"),readdir(dirf))
             global Nt = length(lpict)
             id = sl[]
             global sl = Interact.slider(1:Nt, value=id, label="t")

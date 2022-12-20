@@ -154,7 +154,7 @@ end
 function ssh_history_IDs()
     today = string(Dates.today() - Dates.Month(1))
     jobIDs = Vector{Int}()
-    for i in split(ssh("sacct -S $today -u $username --format=JobID"), keepempty=false)
+    for i in split(ssh("sacct -S $today -u $username --format=JobIDRaw"), keepempty=false)
         b = tryparse(Int, i)
         !isnothing(b) ? push!(jobIDs, b) : nothing
     end

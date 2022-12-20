@@ -108,6 +108,7 @@ function displaysize()
     end
 end
 
+## ONLY IF EXPLICITLY QUOTED EXPRESSIONS
 function concatenate_expressions(e1, e2)
     return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))
 end
