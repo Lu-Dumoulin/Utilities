@@ -8,7 +8,7 @@
 
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ_5/DF.csv"
+path_to_csv = "F:/2D_P_Q_PQ_6/DF.csv"
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
 # ██╔══██╗██╔═══██╗    ████╗  ██║██╔═══██╗╚══██╔══╝    ████╗ ████║██╔═══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝    ██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║
@@ -108,26 +108,6 @@ function getpict(t)
     end
 end
 
-# for wid in 1:N_wid
-#     eval(quote
-#             onany($(sl_list[wid]), $(check_list[wid])) do x, y
-#                 dist = zeros(Nrow)
-#                 for r=1:Nrow
-#                     for c=1:N_wid
-#                         dist[r] += Int(df[r, Symbol(var_list_sl[c])] == sl_list[c][])*(1 + Int(check_list[c][])*100)
-#                     end
-#                 end
-#                 idx = findmax(dist)[2]
-#                 for c=1:N_wid
-#                     if sl_list[c][] != df[idx, Symbol(var_list_sl[c])]
-#                         sl_list[c][] = df[idx, Symbol(var_list_sl[c])]
-#                     end
-#                 end
-#                 global fn[] = string(df[idx,:fn])*"/"
-#             end
-#         end)
-# end
-
 for wid in 1:N_wid
     eval(quote
             on($(check_list[wid])) do x
@@ -195,5 +175,3 @@ end
 map!(getui, ui, fn, radio_dir, radio_png, sl)
 
 eval(Meta.parse(string("""body!(w, dom"div"( hbox( vbox(radio_dir, radio_png, """)*join([ " hbox( $(sl_name[i]), $(check_name[i]) ), " for i in 1:N_wid ])[1:end-1]*string(") , ui)))")))
-
-# eval(Meta.parse(string("""body!(w, dom"div"(hbox( vbox(radio_dir, radio_png, """)*join([ " hbox( $(sl_name[i]), $(check_name[i]) ), " for i in 1:N_wid ])[1:end-1]*string("), ui)))")))
