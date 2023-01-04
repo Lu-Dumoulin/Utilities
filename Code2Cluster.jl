@@ -191,7 +191,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00", df_name="DF.csv"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl")
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl")
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     

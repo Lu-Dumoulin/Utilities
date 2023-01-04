@@ -6,18 +6,15 @@ cluster_home_path = "/home/users/$(username[1])/$username/"
 
 local_utilities_path = normpath(string(@__DIR__,"/"))
 
-# Little function to execute a commande using SSh on the cluster
-@inline function run_ssh(cmd)
-    return run(`ssh $username$host $cmd`)
-end
+# Little function to execute a commande using SSH on the cluster
+@inline run_ssh(cmd) = run(`ssh $username$host $cmd`)
+
 # Same but return consol as a string
-@inline function ssh(cmd)
-    return readchomp(`ssh $username$host $cmd`)
-end
+@inline ssh(cmd) = readchomp(`ssh $username$host $cmd`)
+
 # Same but print result
-@inline function print_ssh(cmd)
-    println(readchomp(`ssh $username$host $cmd`))
-end
+@inline print_ssh(cmd) =  println(readchomp(`ssh $username$host $cmd`))
+
 
 @inline function print_ssh_squeue(; username=username, opt="")
     print_ssh("squeue -u "*string(username)*string(" ",opt))

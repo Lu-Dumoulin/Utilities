@@ -89,11 +89,11 @@ function generate_dataframe(listname, listtab; fn="")
     return df
 end
 
-function generate_csv(dir, listname, listtab, name="DF"; fn="")
-    isdir(dir) ? nothing : mkpath(dir)
-    df = generate_dataframe(listname, listtab, fn=fn)
-    println("Right DataFrame")
-    CSV.write(joinpath(dir,name*".csv"), df)
+function generate_csv(saving_directory, list_col_name, list_tab; name="DF", fn="")
+    isdir(saving_directory) ? nothing : mkpath(saving_directory)
+    df = generate_dataframe(list_col_name, list_tab, fn=fn)
+    println("Write DataFrame")
+    CSV.write(joinpath(saving_directory,name*".csv"), df)
 end
 
 function displaysize()
