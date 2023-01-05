@@ -166,6 +166,10 @@ end
 
 function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl")
     
+    local_code_path *= endswith(local_code_path, "/") ? "" : "/"
+    cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
+    cluster_save_directory *= endswith(cluster_save_directory, "/") ? "" : "/"
+    
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
@@ -192,6 +196,10 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
 end
 
 function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl")
+    
+    local_code_path *= endswith(local_code_path, "/") ? "" : "/"
+    cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
+    cluster_save_directory *= endswith(cluster_save_directory, "/") ? "" : "/"
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     

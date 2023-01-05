@@ -63,10 +63,6 @@ end
     end
 end
 
-# @inline function create_dir(cluster_directory_path)
-#     print_ssh("mkdir -p $cluster_directory_path")
-# end
-
 @inline function ssh_getjobids()
     jobIDs=[]
     for i in split(ssh_squeue(opt="--Format JobID"), keepempty=false)
@@ -160,7 +156,6 @@ end
 
 function ssh_readout(jobID)
     pathout = ssh_getpathout(jobID)
-    # dircl, fn = splitpath(pathout)
     pathout == "" ? nothing : print_ssh("cat $pathout")
 end
 
