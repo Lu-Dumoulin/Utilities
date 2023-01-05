@@ -1,69 +1,3 @@
-# How to use the JupyterHub
-
-### Create your password and first login
-
-1. Type  `jupyter-kruse.unige.ch` in your web browser.
-2. Enter your first name and choose your password
-
-### Add IJulia with optimized kernel
-1. Open a terminal
-2. Type `julia`
-3. copy past
-```julia 
-using Pkg; 
-Pkg.add("IJulia"); 
-using IJulia; 
-installkernel("Julia opt", "-O3", env=Dict("FOO"=>"yes"))
-```
-
-### Restart your server
-
-1. Clic on `File` (top left)
-2. Clic on `Hub Control Panel`
-3. `Stop my server`
-4. `Start my server`
-
-### Install CUDA for Julia
-
-1. Open a Julia opt console
-2. Copy paste
-```julia
-using Pkg
-Pkg.add("CUDA")
-using CUDA
-CUDA.versioninfo()
-```
-
-### Create your Code folder and download Utilities
-1. Copy this link `https://github.com/Lu-Dumoulin/Utilities` , to easily copy-paste you can press shift during the right-clic in order to have the usual option 
-2. Right-clic -> `New Folder`
-3. Name your folder
-4. Select it in order to have it open
-5. Clic on the Git icon and on `Clone a Repository`
-6. Paste the link
-7. If the Utilities folder is not at the right place you can drag and drop it in the right folder
-
-### Configure the access to the cluster from the jupyter-hub
-1. Open a terminal
-2. Type `ssh-keygen` and follow instruction
-(do not enter un phrase-pass)
-3. 
-
-# In case of error:
-
-## Handler error:
-1. In a terminal get the list of the kernel: `jupyter kernelspec list`
-2. Remove the julia kernels: `jupyter kernelspec uninstall julia-*`
-3. Install the new kernel:
-` julia `
-
-```julia 
-using Pkg; 
-Pkg.add("IJulia"); 
-using IJulia; 
-installkernel("Julia", "-O3", env=Dict("FOO"=>"yes"))
-```
-
 # How to use Code to Cluster
 
 ## Intro
@@ -75,7 +9,7 @@ In ssh_login.jl, you have to enter your username
 ```julia
 # Username and host for ssh connection
 # the host is the remote server name, I added the '@' for simplicity
-username = "dumoulil"; host ="@login2.baobab.hpc.unige.ch"
+username = "..."; host ="@login2.baobab.hpc.unige.ch"
 ```
 Then the path of your home directory will be automatically saved in `cluster_home_path`:
 ```julia 
@@ -305,4 +239,70 @@ run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:0
 
 ```julia
 
+```
+
+# How to use the JupyterHub
+
+### Create your password and first login
+
+1. Type  `jupyter-kruse.unige.ch` in your web browser.
+2. Enter your first name and choose your password
+
+### Add IJulia with optimized kernel
+1. Open a terminal
+2. Type `julia`
+3. copy past
+```julia 
+using Pkg; 
+Pkg.add("IJulia"); 
+using IJulia; 
+installkernel("Julia opt", "-O3", env=Dict("FOO"=>"yes"))
+```
+
+### Restart your server
+
+1. Clic on `File` (top left)
+2. Clic on `Hub Control Panel`
+3. `Stop my server`
+4. `Start my server`
+
+### Install CUDA for Julia
+
+1. Open a Julia opt console
+2. Copy paste
+```julia
+using Pkg
+Pkg.add("CUDA")
+using CUDA
+CUDA.versioninfo()
+```
+
+### Create your Code folder and download Utilities
+1. Copy this link `https://github.com/Lu-Dumoulin/Utilities` , to easily copy-paste you can press shift during the right-clic in order to have the usual option 
+2. Right-clic -> `New Folder`
+3. Name your folder
+4. Select it in order to have it open
+5. Clic on the Git icon and on `Clone a Repository`
+6. Paste the link
+7. If the Utilities folder is not at the right place you can drag and drop it in the right folder
+
+### Configure the access to the cluster from the jupyter-hub
+1. Open a terminal
+2. Type `ssh-keygen` and follow instruction
+(do not enter un phrase-pass)
+3. 
+
+# In case of error:
+
+## Handler error:
+1. In a terminal get the list of the kernel: `jupyter kernelspec list`
+2. Remove the julia kernels: `jupyter kernelspec uninstall julia-*`
+3. Install the new kernel:
+` julia `
+
+```julia 
+using Pkg; 
+Pkg.add("IJulia"); 
+using IJulia; 
+installkernel("Julia", "-O3", env=Dict("FOO"=>"yes"))
 ```
