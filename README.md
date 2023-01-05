@@ -24,7 +24,7 @@ ssh(cmd) = readchomp(`ssh $username$host $cmd`)
 
 ## General command
 
-## Run a sim on the cluster
+## Run a simulation on the cluster
 
 ### Input Parameters
 
