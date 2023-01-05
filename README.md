@@ -306,10 +306,12 @@ CUDA.versioninfo()
 7. If the Utilities folder is not at the right place you can drag and drop it in the right folder
 
 ### Configure the access to the cluster from the jupyter-hub
+It is necessary to use SSH key login, which removes the need for a password for each login, thus ensuring a password-less, automatic login process:
 1. Open a terminal
-2. Type `ssh-keygen` and follow instruction
+2. Type `ssh-keygen` and follow instruction to generate public and private key files stored in the ~/.ssh directory
 (do not enter un phrase-pass)
-3. 
+3. Then copy the public key in the ~/.ssh/authorized_keys file, on ubuntu you can use
+ `ssh-copy-id -i ~/.ssh/id_rsa.pub user@remote_host`
 
 # In case of error:
 
