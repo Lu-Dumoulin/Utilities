@@ -23,6 +23,25 @@ ssh(cmd) = readchomp(`ssh $username$host $cmd`)
 ```
 
 ## General command
+If you want to run a ssh command on the cluster you can use the function `ssh("command")`. If you want to run a ssh command and want to print the result in the console you can use `ssh_print("commande")`. For example if you want to check the status of the gpus:
+```julia 
+ssh_print("squeue --nodes=gpu[020-022,027-031]")
+```
+
+Some general commands are already written:
+```julia
+ssh_print_infogpus() # Print gpu status
+ssh_print_quota(user=username) # Print disk quota
+
+ssh_print_squeue(; username=username, opt="") # As squeue
+ssh_print_seff(jobID) # Print efficiency of your job
+
+ssh_scancel(jobID) # scancel
+
+ssh_print_out(jobID) # Print the .out of the job of id jobID
+ssh_print_lastout() # Print the .out of the last job
+ssh_print_lastout(inc) # Print the .out of the (last+inc)th job
+```
 
 ## Run a simulation on the cluster
 
