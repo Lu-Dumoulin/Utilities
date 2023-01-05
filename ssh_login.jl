@@ -11,4 +11,4 @@
 
 # Username and host for ssh connection
 # the host is the remote server name, I added the '@' for simplicity
-username = "...."; host ="...."
+username = "dumoulil"; host ="@login2.baobab.hpc.unige.ch"

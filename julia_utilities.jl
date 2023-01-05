@@ -108,6 +108,33 @@ function displaysize()
     end
 end
 
+@inline filter_ext!(list_of_file, ext) = filter!(endswith(ext), list_of_file)
+@inline filter_ext(list_of_file, ext) = filter(endswith(ext), list_of_file)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## ONLY IF EXPLICITLY QUOTED EXPRESSIONS
 function concatenate_expressions(e1, e2)
     return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))

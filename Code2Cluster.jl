@@ -92,7 +92,7 @@ function generate_bash_array(cluster_saving_directory_path, local_directory_path
            end;
 end
 
-function getinfoout(pathout::String)
+function get_infoout(pathout::String)
     if ssh_isfile(pathout) == "1"
         sp = split(ssh("cat $pathout"), "\n", keepempty=false)
         sp2 = filter(startswith("path_"), sp)
@@ -112,22 +112,22 @@ function getinfoout(pathout::String)
     end
 end
 
-function download_JobID(JobID)
-    fout = ssh_getpathout(JobID)
+function download_job(JobID)
+    fout = ssh_get_pathout(JobID)
     if fout==""
         println("Nothing to download")
     else
-        cluster_directory, local_directory, _ = getinfoout(fout)
+        cluster_directory, local_directory, _ = get_infoout(fout)
         ssh_download(cluster_directory, local_directory)
     end
 end
 
-function download_last_jobs(n=0)
+function download_lastjobs(n=0)
     nn = 0
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = ssh_history_IDs()
+    jobIDs = ssh_get_histjobids()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -139,16 +139,16 @@ function download_last_jobs(n=0)
     end
     for i in jobIDs[end-nn:end]
         println("For job: $i")
-        download_JobID(i)
+        download_job(i)
     end
 end
 
-function download_last_job(n=0)
+function download_lastjob(n=0)
     nn = 0
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = ssh_history_IDs()
+    jobIDs = ssh_get_histjobids()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -160,7 +160,7 @@ function download_last_job(n=0)
     end
     jobID = jobIDs[end-nn]
     println("For job: $jobID")
-    download_JobID(jobID)
+    download_job(jobID)
 end
     
 
