@@ -1,27 +1,7 @@
 include("ssh_utilities.jl")
 usingpkg("JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames")
 
-# Convert notebook file in ".ext" file (stop conversion at #STOP in notebook cell)
-# ext = optional kwarg ! ex: call `ipnyb2jl(tmpdir, ipynfile, ext=".py")` for python file
-function ipnyb2jl(ipynfile; ext=".jl")
-    jlfile = replace(ipynfile, r"(\.ipynb)?$" => ext)
-    nb = open(JSON.parse, ipynfile, "r")
-    open(jlfile, "w") do f
-        for cell in nb["cells"]
-            if cell["source"][1][1:5] == "#STOP" #STOP conversion
-                break;
-            end
-            if cell["cell_type"] == "code"
-                print.(Ref(f), cell["source"])
-                print(f, "\n\n")
-            elseif cell["cell_type"] == "markdown"
-                md = Markdown.parse(join(cell["source"]))
-                println(f, "\n\n# ", replace(repr("text/plain", md), '\n' => "\n# "))
-            end
-        end
-    end
-    return jlfile
-end
+using .SSH, .JulUtils, .SSH.Print
 
 # Change the saving directory from local to cluster
 # The saving directory have to be declare `dir = ...` 
@@ -93,8 +73,8 @@ function generate_bash_array(cluster_saving_directory_path, local_directory_path
 end
 
 function get_infoout(pathout::String)
-    if ssh_isfile(pathout) == "1"
-        sp = split(ssh("cat $pathout"), "\n", keepempty=false)
+    if SSH.File.isfile(pathout) == "1"
+        sp = split(SSH.ssh("cat $pathout"), "\n", keepempty=false)
         sp2 = filter(startswith("path_"), sp)
         if length(sp)==0
             return "", "", ""
@@ -113,12 +93,12 @@ function get_infoout(pathout::String)
 end
 
 function download_job(JobID)
-    fout = ssh_get_pathout(JobID)
+    fout = SSH.Get.pathout(JobID)
     if fout==""
         println("Nothing to download")
     else
         cluster_directory, local_directory, _ = get_infoout(fout)
-        ssh_download(cluster_directory, local_directory)
+        SSH.SCP.download(cluster_directory, local_directory)
     end
 end
 
@@ -127,7 +107,7 @@ function download_lastjobs(n=0)
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = ssh_get_histjobids()
+    jobIDs = SSH.Get.histjobids()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -148,7 +128,7 @@ function download_lastjob(n=0)
     if n < 0 
         println("arg have to be positive: last-arg"); return nothing 
     end
-    jobIDs = ssh_get_histjobids()
+    jobIDs = SSH.Get.histjobids()
     njobs = length(jobIDs)
     if njobs == 0 
         println("No job this past month")
@@ -173,9 +153,9 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
-    ssh_mkdir(cluster_home_path*"Code/")
-    ssh_mkdir(cluster_code_directory)
-    ssh_mkdir(cluster_saving_directory)
+    SSH.File.mkdir(cluster_home_path*"Code/")
+    SSH.File.mkdir(cluster_code_directory)
+    SSH.File.mkdir(cluster_saving_directory)
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """
@@ -185,13 +165,13 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     println("Generate bash file")
     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-    scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+    SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
     println("Upload .jl files from $local_code_path to $cluster_code_directory")
-    scp_up_jl(cluster_code_directory, local_code_path)
+    SSH.SCP.up_jl(cluster_code_directory, local_code_path)
 
     println("Upload C2C.sh from $local_code_path to $cluster_saving_directory")
-    scp_up_file(cluster_saving_directory, local_code_path*sh_name)
-    njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
+    SSH.SCP.up_file(cluster_saving_directory, local_code_path*sh_name)
+    njob = SSH.ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end
 
@@ -206,9 +186,9 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     cluster_saving_directory = cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
-    ssh_mkdir(cluster_home_path*"Code/")
-    ssh_mkdir(cluster_code_directory)
-    ssh_mkdir(cluster_saving_directory)
+    SSH.File.mkdir(cluster_home_path*"Code/")
+    SSH.File.mkdir(cluster_code_directory)
+    SSH.File.mkdir(cluster_saving_directory)
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """
@@ -219,16 +199,16 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name)
  
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
-    scp_up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
+    SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
     println("Upload .jl files from $local_code_path to $cluster_code_directory")
-    scp_up_jl(cluster_code_directory, local_code_path)
+    SSH.SCP.up_jl(cluster_code_directory, local_code_path)
     println("Upload .csv file from $local_code_path to $cluster_code_directory")
-    scp_up_ext(cluster_code_directory, local_code_path, "csv")
+    SSH.SCP.up_ext(cluster_code_directory, local_code_path, "csv")
     println("Upload .csv file from $local_code_path to $cluster_saving_directory")
-    scp_up_ext(cluster_saving_directory, local_code_path, "csv")
+    SSH.SCP.up_ext(cluster_saving_directory, local_code_path, "csv")
 
     println("Upload $sh_name from $local_code_path to $cluster_saving_directory")
-    scp_up_file(cluster_saving_directory, local_code_path*sh_name)
-    njob = ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
+    SSH.SCP.up_file(cluster_saving_directory, local_code_path*sh_name)
+    njob = SSH.ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end

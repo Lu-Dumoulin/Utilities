@@ -3,18 +3,54 @@
 ## Intro
 
 ### The files
+- **julia_utilities.jl**:
+Contains:
+    1. The `usingpkg()` function that install the packages if not installed yet.
+    2. The `JulUtils` module with useful functions.
+
+Example:
+```julia
+include("julia_utilities.jl")
+usingpkg("CUDA,JLD")
+JulUtils.screensize() # return the screen size in pxl
+```
+
+- **png_utilities.jl**: `PictUtils` module with:
+    1. 
+    2.
+
+example
+```julia
+include("png_utilities.jl")
+PictUtils.pngstogif(...) # Convert all the .png of a folder in a .gif
+```
+
+- **ssh_utilities.jl**: Contains the `SSH` module with:
+    1. basic `ssh()` function
+    2. `File` module to create directory, check if a file exists, ...
+    3. `Print` module 
+    4. `Get` module
+    5. `SCP` module
+    
+example
+
+
+- **Code2Cluster.jl**
+- **infoclusterblink.jl**
+- **scan_param_pngs.jl**
+- **ssh_login.jl**
 
 ### Login
 In ssh_login.jl, you have to enter your username
 ```julia
 # Username and host for ssh connection
 # the host is the remote server name, I added the '@' for simplicity
-username = "..."; host ="@login2.baobab.hpc.unige.ch"
+const username = "..."; const host ="@login2.baobab.hpc.unige.ch"
 ```
 Then the path of your home directory will be automatically saved in `cluster_home_path`:
 ```julia 
 # In ssh_utilities.jl
-cluster_home_path = "/home/users/$(username[1])/$username/"
+const cluster_home_path = "/home/users/$(username[1])/$username/"
 ```
 and, in order to run an ssh command, you just have to use the function `ssh()` of ssh_utilies.jl:
 ```julia
@@ -25,25 +61,27 @@ ssh(cmd) = readchomp(`ssh $username$host $cmd`)
 ## General command
 If you want to run a ssh command on the cluster you can use the function `ssh("command")`. If you want to run a ssh command and want to print the result in the console you can use `ssh_print("commande")`. For example if you want to check the status of the gpus:
 ```julia 
-ssh_print("squeue --nodes=gpu[020-022,027-031]")
+SSH.ssh_print("squeue --nodes=gpu[020-022,027-031]")
 ```
 
 Some general commands are already written:
 ```julia
-ssh_print_infogpus() # Print gpu status
-ssh_print_quota(user=username) # Print disk quota
+SSH.Print.infogpus() # Print gpu status
+SSH.Print.quota(user=username) # Print disk quota
 
-ssh_print_squeue(; username=username, opt="") # As squeue
-ssh_print_seff(jobID) # Print efficiency of your job
+SSH.Print.squeue(; username=username, opt="") # As squeue
+SSH.Print.seff(jobID) # Print efficiency of your job
 
-ssh_scancel(jobID) # scancel
+SSH.Print.scancel(jobID) # scancel
 
-ssh_print_out(jobID) # Print the .out of the job of id jobID
-ssh_print_lastout() # Print the .out of the last job
-ssh_print_lastout(inc) # Print the .out of the (last+inc)th job
+SSH.Print.out(jobID) # Print the .out of the job of id jobID
+SSH.Print.lastout() # Print the .out of the last job
+SSH.Print.lastout(inc) # Print the .out of the (last+inc)th job
 ```
+If you `include("Code2Cluster.jl")` then you can directly the `SSH.Print.` is not needed.
 
 ## Run a simulation on the cluster
+You have to `include("Code2Cluster.jl")` in console with julia.
 
 ### Input Parameters
 
@@ -99,7 +137,7 @@ runMat_allgpus("sim1/", "0-12:00:00")
 
 Call function:
 ```julia 
-generate_csv(saving_directory, list_col_name, list_tab; name="DF", fn="")
+JulUtils.generate_csv(saving_directory, list_col_name, list_tab; name="DF", fn="")
 ```
 
 #### For specific use

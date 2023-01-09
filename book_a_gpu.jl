@@ -25,12 +25,12 @@ function book_a_gpu()
     generate_do_nothing(local_code_path)
     sleep(2)
     cluster_saving_directory = cluster_home_path*"BookGPU/"
-    ssh_mkdir(cluster_saving_directory)
+    SSH.File.mkdir(cluster_saving_directory)
     println("""Upload .jl files from $local_code_path in $(cluster_home_path*"Code/Utilities/") """)
-    scp_up_jl(cluster_home_path*"Code/Utilities/", local_code_path)
+    SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_code_path)
     println(" Upload book_gpu.sh from $local_code_path in $cluster_saving_directory ")
-    scp_up_file(cluster_saving_directory, local_code_path*"book_gpu.sh")
-    njob = ssh("cd $cluster_saving_directory && sbatch book_gpu.sh")[end-7:end]
+    SSH.SCP.up_file(cluster_saving_directory, local_code_path*"book_gpu.sh")
+    njob = SSH.ssh("cd $cluster_saving_directory && sbatch book_gpu.sh")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
     sleep(2)
     rm(local_code_path*"book_gpu.sh")

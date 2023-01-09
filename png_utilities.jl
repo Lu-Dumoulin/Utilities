@@ -1,6 +1,10 @@
 include("julia_utilities.jl")
 usingpkg("FixedPointNumbers, FileIO, Base64")
 
+import .JulUtils
+
+module PictUtils
+export showpng, showgif, pngstogif
 function showpng(filename)
     open(filename) do f
         base64f = base64encode(f)
@@ -17,7 +21,7 @@ end
 
 # Convert pngs into gif file
 function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
-    list = filter(endswith(".png"), readdir(dirpngs))
+    list = JulUtils.filter_ext(readdir(dirpngs),".png")
     a = size(load(string(dirpngs,list[1])))
     l = length(list)
     if l>Nimg
@@ -32,4 +36,5 @@ function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
         imgs[:,:,i] = load(string(dirpngs,list[rang[i]]))
     end
     FileIO.save(string(dirgif, name, ".gif"), imgs; fps = fps)
+end
 end

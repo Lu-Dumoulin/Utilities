@@ -11,9 +11,9 @@ global longs = Observable{Any}("tessttt")
 function get_jobsinfo()
     longstring = ""
     
-    jobIDs = ssh_get_jobids()
+    jobIDs = SSH.Get.jobids()
 
-    longstring *= ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed --array-unique")
+    longstring *= SSH.ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed --array-unique")
     longstring *= "\n"
     for jobID in jobIDs
         idx = findfirst(isequal(jobID), mem_jobIDs)
@@ -30,11 +30,11 @@ function get_jobsinfo()
                 st *= lastline*" \n"
             else
                 println(" Read last line of the .out of job: $jobID")
-                st *= ssh_get_lastlineout(mem_pathout[idx])*" \n"
+                st *= SSH.Get.lastlineout(mem_pathout[idx])*" \n"
             end
         else # First time jobId
             println(" Get and save path of .out file for: $jobID")
-            fout = ssh_get_pathoutrunning(jobID)*string(jobID,".out")
+            fout = SSH.Get.pathoutrunning(jobID)*string(jobID,".out")
             if length(fout)>1
                 push!(mem_jobIDs, jobID)
                 push!(mem_pathout, fout)
@@ -75,7 +75,7 @@ function do_download(mem_pathcluster, mem_pathlocal)
         dir_clu = dir_tuple[i][1]
         dir_res = dir_tuple[i][2]
         dir_clu*dir_res == "" ? println(" Nothing to download") : nothing
-        dir_clu*dir_res != "" ? ssh_download(dir_clu, dir_res) : nothing
+        dir_clu*dir_res != "" ? SSH.SCP.download(dir_clu, dir_res) : nothing
     end
 end
 

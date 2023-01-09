@@ -13,6 +13,9 @@ using Pkg
     end
 end
 
+module JulUtils
+export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!
+import .Main: usingpkg
 usingpkg("DelimitedFiles, CSV, DataFrames, Makie")
 
 # Read the last line of a (`.out`) file
@@ -67,9 +70,9 @@ function generate_dataframe(listname, listtab; fn="")
         nsim *= length(listtab[i])
     end
     tabid = 1:nsim
-    
+
     df = DataFrame([[listtab[i][1] for _ in 1:nsim ] for i = 1:length(listname)] , listname)
-    
+
     count = 1
 
     for i=1:length(listtab)
@@ -96,7 +99,7 @@ function generate_csv(saving_directory, list_col_name, list_tab; name="DF", fn="
     CSV.write(joinpath(saving_directory,name*".csv"), df)
 end
 
-function displaysize()
+function screensize()
     size = Vector{Int}()
     if Sys.iswindows()
         for i in split(readchomp(`wmic path Win32_VideoController get CurrentHorizontalResolution,CurrentVerticalResolution`))
@@ -110,7 +113,30 @@ end
 
 @inline filter_ext!(list_of_file, ext) = filter!(endswith(ext), list_of_file)
 @inline filter_ext(list_of_file, ext) = filter(endswith(ext), list_of_file)
-    
+
+# Convert notebook file in ".ext" file (stop conversion at #STOP in notebook cell)
+# ext = optional kwarg ! ex: call `ipnyb2jl(tmpdir, ipynfile, ext=".py")` for python file
+function ipnyb2jl(ipynfile; ext=".jl")
+    jlfile = replace(ipynfile, r"(\.ipynb)?$" => ext)
+    nb = open(JSON.parse, ipynfile, "r")
+    open(jlfile, "w") do f
+        for cell in nb["cells"]
+            if cell["source"][1][1:5] == "#STOP" #STOP conversion
+                break;
+            end
+            if cell["cell_type"] == "code"
+                print.(Ref(f), cell["source"])
+                print(f, "\n\n")
+            elseif cell["cell_type"] == "markdown"
+                md = Markdown.parse(join(cell["source"]))
+                println(f, "\n\n# ", replace(repr("text/plain", md), '\n' => "\n# "))
+            end
+        end
+    end
+    return jlfile
+end
+
+end
 
 
 
@@ -136,28 +162,28 @@ end
 
 
 ## ONLY IF EXPLICITLY QUOTED EXPRESSIONS
-function concatenate_expressions(e1, e2)
-    return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))
-end
+# function concatenate_expressions(e1, e2)
+#     return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))
+# end
 
-# For indexing GPU kernel: @indexing_XD with X the dimension of your grid
-macro indexing_1D() 
-    esc(quote
-        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-    end)
-end
+# # For indexing GPU kernel: @indexing_XD with X the dimension of your grid
+# macro indexing_1D() 
+#     esc(quote
+#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+#     end)
+# end
 
-macro indexing_2D() 
-    esc(quote
-        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-        j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
-    end)
-end
+# macro indexing_2D() 
+#     esc(quote
+#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+#         j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
+#     end)
+# end
 
-macro indexing_3D() 
-    esc(quote
-        i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-        j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
-        k = (blockIdx().z - 1) * blockDim().z + threadIdx().z
-    end)
-end
+# macro indexing_3D() 
+#     esc(quote
+#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+#         j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
+#         k = (blockIdx().z - 1) * blockDim().z + threadIdx().z
+#     end)
+# end
