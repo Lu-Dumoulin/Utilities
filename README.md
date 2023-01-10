@@ -9,7 +9,7 @@
 Example:
 ```julia
 include("using.jl")
-usingpkg("CUDA, JLD")
+using_pkg("CUDA, JLD")
 using_mod(".SSH, .JulUtils")
 ```
 - **JulUtils.jl**: contains the `JulUtils` module with useful functions.
