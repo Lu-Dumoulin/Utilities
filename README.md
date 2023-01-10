@@ -3,29 +3,34 @@
 ## Intro
 
 ### The files
-- **julia_utilities.jl**:
-Contains:
-    1. The `usingpkg()` function that install the packages if not installed yet.
-    2. The `JulUtils` module with useful functions.
+- **using.jl**: contains
+1. The `using_pkg()` function that install the packages if not installed yet.
+2. The `using_mod()` function to load and define the module if not already defined.
+Example:
+```julia
+include("using.jl")
+usingpkg("CUDA, JLD")
+using_mod(".SSH, .JulUtils")
+```
+- **JulUtils.jl**: contains the `JulUtils` module with useful functions.
 
 Example:
 ```julia
-include("julia_utilities.jl")
-usingpkg("CUDA,JLD")
 JulUtils.screensize() # return the screen size in pxl
+JulUtils.generate_dataframe(listname, listtab) # generate a DataFrame with all permutaions of parameters
 ```
 
-- **png_utilities.jl**: `PictUtils` module with:
+- **PictUtils.jl**: `PictUtils` module with:
     1. 
     2.
 
 example
 ```julia
-include("png_utilities.jl")
+include("PictUtils.jl")
 PictUtils.pngstogif(...) # Convert all the .png of a folder in a .gif
 ```
 
-- **ssh_utilities.jl**: Contains the `SSH` module with:
+- **SSH.jl**: Contains the `SSH` module with:
     1. basic `ssh()` function
     2. `File` module to create directory, check if a file exists, ...
     3. `Print` module 
@@ -78,7 +83,7 @@ SSH.Print.out(jobID) # Print the .out of the job of id jobID
 SSH.Print.lastout() # Print the .out of the last job
 SSH.Print.lastout(inc) # Print the .out of the (last+inc)th job
 ```
-If you `include("Code2Cluster.jl")` then you can directly the `SSH.Print.` is not needed.
+If you `include("Code2Cluster.jl")` then `SSH.Print.` is not needed.
 
 ## Run a simulation on the cluster
 You have to `include("Code2Cluster.jl")` in console with julia.
