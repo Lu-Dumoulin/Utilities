@@ -1,22 +1,10 @@
-using Pkg
-
-@inline function usingpkg(st)
-    listofpkg = split(st, ", ")
-    for package in listofpkg
-        try 
-            @eval using $(Symbol(package))
-        catch
-            println("Installing $package ...")
-            Pkg.add(package)
-            @eval using $(Symbol(package))
-        end
-    end
-end
+include("using.jl")
 
 module JulUtils
 export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!
-import .Main: usingpkg
-usingpkg("DelimitedFiles, CSV, DataFrames, Makie")
+import .Main: using_pkg
+
+using_pkg("DelimitedFiles, CSV, DataFrames, Makie")
 
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
@@ -137,53 +125,3 @@ function ipnyb2jl(ipynfile; ext=".jl")
 end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## ONLY IF EXPLICITLY QUOTED EXPRESSIONS
-# function concatenate_expressions(e1, e2)
-#     return Base.remove_linenums!(Meta.parse(string(Base.remove_linenums!(e1))[1:end-3]*string(Base.remove_linenums!(e2))[6:end]))
-# end
-
-# # For indexing GPU kernel: @indexing_XD with X the dimension of your grid
-# macro indexing_1D() 
-#     esc(quote
-#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-#     end)
-# end
-
-# macro indexing_2D() 
-#     esc(quote
-#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-#         j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
-#     end)
-# end
-
-# macro indexing_3D() 
-#     esc(quote
-#         i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-#         j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
-#         k = (blockIdx().z - 1) * blockDim().z + threadIdx().z
-#     end)
-# end

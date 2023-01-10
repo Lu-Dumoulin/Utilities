@@ -1,5 +1,5 @@
 include("Code2Cluster.jl")
-usingpkg("Interact, Blink")
+using_pkg("Interact, Blink")
 
 global mem_jobIDs = Vector{Int}()
 global mem_pathout = Vector{String}()

@@ -1,7 +1,7 @@
-include("ssh_utilities.jl")
-usingpkg("JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames")
-
-using .SSH, .JulUtils, .SSH.Print
+include("using.jl")
+using_pkg("JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames")
+using_mod(".SSH, .JulUtils")
+using .SSH.Print
 
 # Change the saving directory from local to cluster
 # The saving directory have to be declare `dir = ...` 
@@ -212,3 +212,5 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     njob = SSH.ssh("cd $cluster_saving_directory && sbatch $sh_name")[end-7:end]
     println("Job submitted, the id is: ", njob) # print job number
 end
+
+infocluster() = include(joinpath(@__DIR__,"infoclusterblink.jl"))

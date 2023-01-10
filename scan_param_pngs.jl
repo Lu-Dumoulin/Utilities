@@ -17,9 +17,9 @@ path_to_csv = "F:/Luca_1/DF.csv"
 # ██████╔╝╚██████╔╝    ██║ ╚████║╚██████╔╝   ██║       ██║ ╚═╝ ██║╚██████╔╝██████╔╝██║██║        ██║       ██████╔╝███████╗███████╗╚██████╔╝╚███╔███╔╝
 # ╚═════╝  ╚═════╝     ╚═╝  ╚═══╝ ╚═════╝    ╚═╝       ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚═╝╚═╝        ╚═╝       ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝ 
 
-include("julia_utilities.jl")
-usingpkg("Makie, JLD, Printf, FixedPointNumbers, FileIO, Base64, Colors, Images, CSV, DataFrames, Interact, Blink, WebIO")
-using .JulUtils
+include("using.jl")
+using_pkg("Makie, JLD, Printf, FixedPointNumbers, FileIO, Base64, Colors, Images, CSV, DataFrames, Interact, Blink, WebIO")
+using_mod(".JulUtils")
 
 dir, name_csv = JulUtils.splitpath(path_to_csv)
 
