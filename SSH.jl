@@ -171,7 +171,7 @@ using ..SSH, .SSH.File, ...JulUtils
     end
 end
 
-@inline up_jl(cluster_directory_path, local_directory_path) = scp_up_ext(cluster_directory_path, local_directory_path, ".jl")
+@inline up_jl(cluster_directory_path, local_directory_path) = up_ext(cluster_directory_path, local_directory_path, ".jl")
 
 @inline function update_file(filename, cluster_directory_path, local_directory_path)
     if filename != "" && File.filesize(cluster_directory_path*filename) != filesize(local_directory_path*filename)
