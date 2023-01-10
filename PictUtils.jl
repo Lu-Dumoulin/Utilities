@@ -1,12 +1,7 @@
 include("using.jl")
 using_pkg("FixedPointNumbers, FileIO, Base64, Colors")
+using_mod(".JulUtils")
 
-if !isdefined(@__MODULE__, :JulUtils)
-    include("julia_utilities.jl")
-end
-using .JulUtils
-
-# if !isdefined(PictUtils) 
 module PictUtils
 export showpng, showgif, pngstogif
 import ..JulUtils
@@ -45,4 +40,3 @@ function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
     FileIO.save(string(dirgif, name, ".gif"), imgs; fps = fps)
 end
 end
-# end

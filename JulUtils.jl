@@ -1,10 +1,10 @@
 include("using.jl")
+using_pkg("DelimitedFiles, CSV, DataFrames, Makie")
 
 module JulUtils
 export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!
-import .Main: using_pkg
-
-using_pkg("DelimitedFiles, CSV, DataFrames, Makie")
+# import .Main: import_pkg
+using DelimitedFiles, CSV, DataFrames, Makie
 
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
@@ -59,7 +59,7 @@ function generate_dataframe(listname, listtab; fn="")
     end
     tabid = 1:nsim
 
-    df = DataFrame([[listtab[i][1] for _ in 1:nsim ] for i = 1:length(listname)] , listname)
+    df = DataFrames.DataFrame([[listtab[i][1] for _ in 1:nsim ] for i = 1:length(listname)] , listname)
 
     count = 1
 
@@ -74,7 +74,7 @@ function generate_dataframe(listname, listtab; fn="")
         end
     end
     if fn != "NO"
-        insertcols!(df, 1, :fn => fn.*string.(tabid))
+        DataFrames.insertcols!(df, 1, :fn => fn.*string.(tabid))
     end
     println("   Number of rows: $nsim")
     return df
