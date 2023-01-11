@@ -156,6 +156,8 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     SSH.File.mkdir(cluster_home_path*"Code/")
     SSH.File.mkdir(cluster_code_directory)
     SSH.File.mkdir(cluster_saving_directory)
+    SSH.File.mkdir(cluster_home_path*"Code/Utilities/")
+    
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """
@@ -189,6 +191,8 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     SSH.File.mkdir(cluster_home_path*"Code/")
     SSH.File.mkdir(cluster_code_directory)
     SSH.File.mkdir(cluster_saving_directory)
+    SSH.File.mkdir(cluster_home_path*"Code/Utilities/")
+    
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """

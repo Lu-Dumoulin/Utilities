@@ -8,7 +8,7 @@
 
 # Enter:
 # Path to csv file
-path_to_csv = "F:/Luca_1/DF.csv"
+path_to_csv = "F:/2D_P_Q_PQ_9/DF.csv"
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
 # ██╔══██╗██╔═══██╗    ████╗  ██║██╔═══██╗╚══██╔══╝    ████╗ ████║██╔═══██╗██╔══██╗██║██╔════╝╚██╗ ██╔╝    ██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║
@@ -26,17 +26,19 @@ dir, name_csv = JulUtils.splitpath(path_to_csv)
 screen_size = JulUtils.screensize()
 hor_size = screen_size[1]
 vert_size = screen_size[2]
+   
 hv = string(vert_size*0.85, "px")
 hh = string(hor_size*0.75, "px")
 wh = floor(Int, hor_size*0.9)
 wv = floor(Int, vert_size*0.90)
 buth = string(hor_size*(0.9-0.75),"px")
 
+h = hor_size > vert_size*1.5 ? "height:"*hv : "width:"*hh
 
 df = CSV.read(dir*name_csv, DataFrame)[:,1:end]
 symb = Sys.iswindows() ? '\\' : '/'
 
-all_dir = get_all_dir_ext(dir; ext=".png")
+all_dir = JulUtils.get_all_dir_ext(dir; ext=".png")
 dir_names = Vector{String}()
 for i in all_dir
     push!(dir_names, split(normpath(i), symb, keepempty=false)[end])
@@ -45,17 +47,17 @@ tab_fig_dir = unique(dir_names) .* "/"
 dir_names = nothing
 all_dir = nothing
 
-function showpngb(filename; h=hh)
+function showpngb(filename; h=h)
     open(filename) do f
         base64f = base64encode(f)
-        return HTML("""<img src="data:image/png;base64,$base64f" style=width:$h>""")
+        return HTML("""<img src="data:image/png;base64,$base64f" style=$h>""")
     end
 end
 
-function showgifb(filename; h=hh)
+function showgifb(filename; h=h)
     open(filename) do f
         base64_video = base64encode(f)
-        return HTML("""<img src="data:image/gif;base64,$base64_video" style=width:$h>""")
+        return HTML("""<img src="data:image/gif;base64,$base64_video" style=$h>""")
     end
 end
 
@@ -159,13 +161,14 @@ function getui(fn, radio_dir, radio_png, sl)
             id = sl[]
             global sl = Interact.slider(1:Nt, value=id, label="t")
             map!(getpict, pict, sl)
-            return dom"div"(style = Dict("width" => hh, "height" => hv), pict, sl)
+            return dom"div"(style = Dict("width" => hh, "height" => hv), pict, sl, "Simulation number $fn")
         else
             gif_path = filter!(endswith(".gif"),readdir(dirf))
+            # println(fn)
             if length(gif_path) == 0
                 return dom"div"()
             else
-                return dom"div"(showgifb(dirf*gif_path[1]))
+                return dom"div"(showgifb(dirf*gif_path[1]), "Simulation number $fn")
             end
         end
     else

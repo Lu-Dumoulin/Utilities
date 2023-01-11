@@ -74,6 +74,7 @@ function do_download(mem_pathcluster, mem_pathlocal)
     for i=1:length(dir_tuple)
         dir_clu = dir_tuple[i][1]
         dir_res = dir_tuple[i][2]
+        dir_res *= (dir_res=="" || endswith(dir_res, "/")) ? "" : "/"
         dir_clu*dir_res == "" ? println(" Nothing to download") : nothing
         dir_clu*dir_res != "" ? SSH.SCP.download(dir_clu, dir_res) : nothing
     end
