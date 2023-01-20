@@ -50,10 +50,10 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
            end;
 end
 
-function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh")
+function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", ngpu=20)
     bsh1 = """
     #!/bin/env bash
-    #SBATCH --array=1-$Njob%20
+    #SBATCH --array=1-$Njob%$ngpu
     #SBATCH --partition=$partitions
     #SBATCH --time=$time
     #SBATCH --gpus=ampere:1
@@ -144,7 +144,7 @@ function download_lastjob(n=0)
 end
     
 
-function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", ngpu=20)
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -165,7 +165,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
-    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
+    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name, ngpu=ngpu)
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
     println("Upload .jl files from $local_code_path to $cluster_code_directory")
