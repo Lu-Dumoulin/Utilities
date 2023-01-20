@@ -90,7 +90,7 @@ You have to `include("Code2Cluster.jl")` in console with julia.
 
 ### Input Parameters
 
-In order to run your simulation on the cluster using only one line of code, the name of the variable indicating the name of the directory where you want to save data have to be `dir =` .
+In order to run your simulation on the cluster using only one line of code, the name of the variable indicating the name of the directory where you want to save data have to be `dir =` . It has to be exactly `dir =` without any space or tabulation !
 
 ```julia
 dir = "/home/jupyter-ludo/Data/Asters/sim1/" 
