@@ -26,6 +26,10 @@ function pngstogif(dirpngs, dirgif, name, fps; Nimg = 201)
     list = JulUtils.filter_ext(readdir(dirpngs),".png")
     a = size(FileIO.load(string(dirpngs,list[1])))
     l = length(list)
+    if l==0
+        println("   There is no .png in this directory")
+        return nothing
+    end
     if l>Nimg
         rang = Int.(floor.(range(1, l, Nimg)))
         global l = Nimg
