@@ -174,7 +174,7 @@ end
 function install_julia_packages()
     println("It will remove your .julia/ folder after creating a backup.")
     println("The duration of the installation is about 1 hour.")
-    println("Are you sure you are in one of these case:")
+    println("Are you sure to be in one of these cases:")
     println(" - You want to install the necessary packages for the first time")
     println(" - You want to reset the previous installation")
     println(" Yes / No ?")
@@ -184,9 +184,9 @@ function install_julia_packages()
         return nothing
     end
     
-    println("Check if .julia/ exists")
+    println("Check if .julia/ exist")
     if SSH.File.isdir(".julia/")
-        println(" Check if old backup exists")
+        println(" Check if old backup exist")
         if SSH.File.isdir(".juliaold/")
             println("  Remove old backup ...")
             SSH.run_ssh("rm -rf $cluster_home_path"*".juliaold/")
