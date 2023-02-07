@@ -27,10 +27,36 @@ using ..SSH
 @inline findfile(filename, cluster_directory_path) = ssh("find $cluster_directory_path -name $filename")
 
 @inline function isfile(cluster_file_path)
+    local answ;
     try
-        return ssh("""[[ -f $cluster_file_path ]] && echo "1" || echo "0" """)
+        answ = ssh("""[[ -f $cluster_file_path ]] && echo "1" || echo "0" """)
     catch
-        return "Issue"
+        answ = "Issue"
+    end
+    answ == "1" ? (return true) : nothing
+    if answ == "0"
+        return false
+    else 
+        println(" ERROR while looking for $cluster_file_path")
+        return false
+    end
+end
+
+@inline function isdir(dir_name)
+    full_path = cluster_home_path*dir_name
+    full_path *= endswith("/", full_path) ? "" : "/"
+    local answ;
+    try
+        answ = ssh(""" [ -d $full_path ]  && echo "1" || echo "0" """)
+    catch
+        answ = "Issue"
+    end
+    answ == "1" ? (return true) : nothing
+    if answ == "0"
+        return false
+    else 
+        println(" ERROR while looking for $full_path")
+        return false
     end
 end
 

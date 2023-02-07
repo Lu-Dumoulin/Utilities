@@ -72,8 +72,36 @@ function generate_bash_array(cluster_saving_directory_path, local_directory_path
            end;
 end
 
+function generate_inst_package_julia()
+    jlfile = """
+    using Pkg
+    Pkg.add("CUDA")
+    using CUDA
+    CUDA.versioninfo()
+    pkg_list = ["FFTW", "FileIO", "Distributions", "Printf", "JLD", "Statistics", "JSON", "Markdown", "Dates", "DelimitedFiles", "CSV", "DataFrames"]
+    for i in pkg_list
+        Pkg.add(i)
+    end
+    
+    using FFTW, FileIO, Distributions, Printf, JLD, Statistics
+    using JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames
+    
+    println("Remove installation folder")
+    
+    rm( "$cluster_home_path"*"Code/install_pack/", force=true, recursive=true)
+    """
+   
+    folder_path = joinpath(@__DIR__,"install_pack/")
+    mkpath(folder_path)
+    open(folder_path*"install_packages.jl", "w") do io
+               write(io, jlfile)
+           end;
+    return folder_path
+end
+
+
 function get_infoout(pathout::String)
-    if SSH.File.isfile(pathout) == "1"
+    if SSH.File.isfile(pathout)
         sp = split(SSH.ssh("cat $pathout"), "\n", keepempty=false)
         sp2 = filter(startswith("path_"), sp)
         if length(sp)==0
@@ -143,8 +171,40 @@ function download_lastjob(n=0)
     download_job(jobID)
 end
     
+function install_julia_packages()
+    println("It will remove your .julia/ folder after creating a backup.")
+    println("The duration of the installation is about 1 hour.")
+    println("Are you sure you are in one of these case:")
+    println(" - You want to install the necessary packages for the first time")
+    println(" - You want to reset the previous installation")
+    println(" Yes / No ?")
+    
+    if readline() ∉ ["Y", "Yes", "yes", "y"]
+        println(" Installation canceled !")
+        return nothing
+    end
+    
+    println("Check if .julia/ exists")
+    if SSH.File.isdir(".julia/")
+        println(" Check if old backup exists")
+        if SSH.File.isdir(".juliaold/")
+            println("  Remove old backup ...")
+            SSH.run_ssh("rm -rf $cluster_home_path"*".juliaold/")
+        end
+        println(" Create backup folder .juliaold/ ")
+        SSH.run_ssh("cd $cluster_home_path & mv .julia{,old}")
+    end
+    
+    println("Create temporal folder install_pack/ ")
+    folder_path = generate_inst_package_julia()
+    
+    run_one_sim(folder_path, "install_packages.jl", "install_pack/", "Code/install_pack/", "0-01:00:00"; partitions="private-kruse-gpu,shared-gpu", sh_name="install_pkg.sh", input_param_namefile = "install_packages.jl", constraint="")
+    println("Remove temporal folder install_pack/ ")
+    rm(folder_path, force = true, recursive = true)
+    println("The installation will be over when the job will be over")
+end
 
-function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -165,7 +225,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
-    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name)
+    generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name, constraint=constraint)
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
     println("Upload .jl files from $local_code_path to $cluster_code_directory")
@@ -177,7 +237,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", ngpu=20)
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", ngpu=20, constraint="DOUBLE_PRECISION_GPU")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -200,7 +260,7 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
-    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, ngpu=ngpu)
+    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, ngpu=ngpu, constraint=constraint)
  
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
