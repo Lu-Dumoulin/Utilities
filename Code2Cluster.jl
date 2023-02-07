@@ -58,10 +58,10 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
            end;
 end
 
-function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", ncores=20)
+function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", npara=20)
     local bsh0 = """
     #!/bin/env bash
-    #SBATCH --array=1-$Njob%$ncores
+    #SBATCH --array=1-$Njob%$npara
     #SBATCH --partition=$partitions
     #SBATCH --time=$time
     #SBATCH --output=%J.out
@@ -255,7 +255,8 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", ncores=20, constraint="DOUBLE_PRECISION_GPU")
+# npara is the maximal number of CPUs/GPUs allowed to run simultaneously in order to not use the whole cluster
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -278,7 +279,7 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
-    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, ncores=ncores, constraint=constraint)
+    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, npara=npara, constraint=constraint)
  
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
