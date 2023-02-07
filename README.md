@@ -288,7 +288,8 @@ println(idx)
 
 ### run_arra_DF() function
 ```julia
-run_array_DF(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl")
+# npara is the maximal number of CPUs/GPUs allowed to run simultaneously in order to not use the whole cluster
+function run_array_DF(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU")
 ```
 example:
 ```julia
