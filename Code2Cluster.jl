@@ -26,46 +26,64 @@ function change_saving_directory(local_directory_path, jlfile, sdir)
 end
 
 # Generate the bash file
-# You have to fill the important lines first
 # By default execute julia file on one DP Ampere GPU with optimize compilation
 function generate_bash(cluster_saving_directory_path, local_directory_path, julia_file_path, time; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C.sh")
-    bsh1 = """
+    local bsh0 = """
     #!/bin/env bash
     #SBATCH --partition=$partitions
     #SBATCH --time=$time
-    #SBATCH --gpus=ampere:1
-    #SBATCH --constraint=$constraint
     #SBATCH --output=%J.out
-    #SBATCH --mem=$mem
-
+    #SBATCH --mem=$mem """
+    if occursin("gpu", partitions)
+        bsh0 *= """ 
+        #SBATCH --gpus=ampere:1 
+        #SBATCH --constraint=$constraint
+        """
+    else
+        if !occursin("GPU", constraint)
+            bsh0 *= """ #SBATCH --constraint=$constraint """
+        end
+    end
+    
+    bsh1 = """
+    
     module load Julia
 
     cd """
-
     bsh2 = "srun julia --optimize=3 "
-    bsh = bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
+    bsh = bsh0*bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
 
     open(local_directory_path*sh_name, "w") do io
                write(io, bsh)
            end;
 end
 
-function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", ngpu=20)
-    bsh1 = """
+function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", ncores=20)
+    local bsh0 = """
     #!/bin/env bash
-    #SBATCH --array=1-$Njob%$ngpu
+    #SBATCH --array=1-$Njob%$ncores
     #SBATCH --partition=$partitions
     #SBATCH --time=$time
-    #SBATCH --gpus=ampere:1
-    #SBATCH --constraint=$constraint
     #SBATCH --output=%J.out
-    #SBATCH --mem=$mem
-
+    #SBATCH --mem=$mem """
+    if occursin("gpu", partitions)
+        bsh0 *= """ 
+        #SBATCH --gpus=ampere:1 
+        #SBATCH --constraint=$constraint
+        """
+    else
+        if !occursin("GPU", constraint)
+            bsh0 *= """ #SBATCH --constraint=$constraint """
+        end
+    end
+    
+    bsh1 = """
+    
     module load Julia
 
     cd """
     bsh2 = "srun julia --optimize=3 "
-    bsh = bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
+    bsh = bsh0*bsh1*cluster_saving_directory_path*"\n"*bsh2*julia_file_path
 
     open(local_directory_path*sh_name, "w") do io
                write(io, bsh)
@@ -237,7 +255,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", ngpu=20, constraint="DOUBLE_PRECISION_GPU")
+function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", ncores=20, constraint="DOUBLE_PRECISION_GPU")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -260,7 +278,7 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     change_saving_directory(local_code_path, input_param_namefile, sdir)
     
     println("Generate bash file")
-    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, ngpu=ngpu, constraint=constraint)
+    generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, ncores=ncores, constraint=constraint)
  
     println("""Upload .jl files from $local_utilities_path to $(cluster_home_path*"Code/Utilities/") """)
     SSH.SCP.up_jl(cluster_home_path*"Code/Utilities/", local_utilities_path)
