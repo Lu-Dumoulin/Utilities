@@ -87,6 +87,7 @@ If you `include("Code2Cluster.jl")` then `SSH.Print.` is not needed.
 
 ## Run a simulation on the cluster
 You have to `include("Code2Cluster.jl")` in console with julia.
+Then you can install some usefull packages using `install_julia_packages()`.
 
 ### Input Parameters
 
