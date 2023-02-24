@@ -358,6 +358,47 @@ It is necessary to use SSH key login, which removes the need for a password for 
 3. Then copy the public key in the ~/.ssh/authorized_keys file, on ubuntu you can use
  `ssh-copy-id -i ~/.ssh/id_rsa.pub user@remote_host`
 
+### How to delete your data files (all the files with specific .ext)
+The storage on the jupyterhub is limited, if you want to delete your data but to keep your pictures or gifs you can use the JulUtils module.
+The function `get_all_ext("directory_path", ext=".ext")` get the path of all the `.ext` files in the folder and sub-folders of `directory_path`.
+
+Example: I want to delete all my .jld files (recursively) from my Data folder. 
+```julia
+include("/home/jupyter-ludo/Code/Utilities/using.jl")
+using_mod(".JulUtils")
+all_jld_path = get_all_ext("/home/jupyter-ludo/Data/", ext=".jld")
+```
+```
+3361-element Vector{String}:
+ "/home/jupyter-ludo/Data/Asters/" ⋯ 19 bytes ⋯ "h13m51s/Data/data_000000000.jld"
+ "/home/jupyter-ludo/Data/Asters/" ⋯ 19 bytes ⋯ "h13m51s/Data/data_000020000.jld"
+ ⋮
+ "/home/jupyter-ludo/Data/Prot/testwPQ2D_8/Data/data02490000.jld"
+ "/home/jupyter-ludo/Data/Prot/testwPQ2D_8/Data/data02500000.jld"
+ ```
+If you want to delete these files, you can just do a for loop and use the `rm()` function of julia: `[rm(i, force=true) for i in all_jld_path]`.
+If you want to delete the "Data" parent directory of the .ext filea you can use the `JulUtils.splitpath("full_path")` function.
+```julia
+all_folder_path = similar(all_jld_path)
+for i in eachindex(all_jld_path)
+    all_folder_path[i] = JulUtils.splitpath(all_jld_path[i])[1]
+end
+unique!(all_folder_path)
+```
+```
+79-element Vector{String}:
+ "/home/jupyter-ludo/Data/Asters/force/2023-01-18/11h13m51s/Data/"
+ "/home/jupyter-ludo/Data/Asters/force/2023-01-18/11h25m25s/Data/"
+ ⋮
+ "/home/jupyter-ludo/Data/Prot/testwPQ2D_7/Data/"
+ "/home/jupyter-ludo/Data/Prot/testwPQ2D_8/Data/"
+ ```
+```julia
+for i in all_folder_path
+    rm(i, recursive = true)
+end
+```
+
 # In case of error:
 
 ## Handler error:
