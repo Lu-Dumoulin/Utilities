@@ -53,7 +53,8 @@ function get_all_dir_ext(dir="/home/"; ext=".gif", hidden=false)
 end
 
 function make_code_back_up()
-    back_up_path = joinpath(homedir(),".CODE_BACK_UP/")
+    root_dir = Sys.iswindows() ?  normpath(joinpath(pwd(),"..","..")) : homedir() 
+    back_up_path = joinpath(root_dir,".CODE_BACK_UP/")
     mkpath(back_up_path)
     dirname = string(Dates.today(),"/")
     
@@ -65,12 +66,12 @@ function make_code_back_up()
     end
     
     println(" Make a back up of all julia files in a folder: ", back_up_path*dirname)
-    if isfile(back_up_path*dirname)
+    if isdir(back_up_path*dirname)
         println("  Overwrite the back up of today")
         rm(back_up_path*dirname, recursive = true)
     end
     mkdir(back_up_path*dirname);
-    path_to_jl = get_all_ext(homedir(), ext=".jl")
+    path_to_jl = get_all_ext(root_dir, ext=".jl")
     new_names = similar(path_to_jl)
     for i=1:length(path_to_jl)
         tmp = Base.splitpath(path_to_jl[i])
@@ -81,7 +82,8 @@ function make_code_back_up()
 end
 
 function automatic_back_up()
-    back_up_path = joinpath(homedir(),".CODE_BACK_UP/")
+    root_dir = Sys.iswindows() ? normpath(joinpath(pwd(),"..","..")) : homedir() 
+    back_up_path = joinpath(root_dir,".CODE_BACK_UP/")
     println("Check if the back up of today is done")
     if !isdir(back_up_path)
         make_code_back_up()
