@@ -1,10 +1,10 @@
 include("using.jl")
-using_pkg("DelimitedFiles, CSV, DataFrames, Makie")
+using_pkg("DelimitedFiles, CSV, DataFrames, Makie, ZipFile, Dates")
 
 module JulUtils
-export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!
+export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!, make_code_back_up, automatic_back_up
 # import .Main: import_pkg
-using DelimitedFiles, CSV, DataFrames, Makie
+using DelimitedFiles, CSV, DataFrames, Makie, Dates, ZipFile
 
 # Read the last line of a (`.out`) file
 # Read only the last line, speed independant of the number of lines !
@@ -25,9 +25,10 @@ function splitpath(pathfn)
     return dirname(pathfn)*"/", basename(pathfn)
 end
 
-function get_all_ext(dir; ext=".gif")
+function get_all_ext(dir; ext=".gif", hidden=false)
     path_to_exts = Vector{String}()
     for (root, dirs, files) in walkdir(dir)
+        !hidden && contains(root, ".") && continue
         for file in files
             if endswith(file, ext)
                 push!(path_to_exts, joinpath(root, file))
@@ -37,9 +38,10 @@ function get_all_ext(dir; ext=".gif")
     return path_to_exts
 end
 
-function get_all_dir_ext(dir="/home/"; ext=".gif")
+function get_all_dir_ext(dir="/home/"; ext=".gif", hidden=false)
     path_to_exts = Vector{String}()
     for (root, dirs, files) in walkdir(dir)
+        !hidden && contains(root, ".") && continue
         for file in files
             if endswith(file, ext)
                 push!(path_to_exts, joinpath(root))
@@ -48,6 +50,52 @@ function get_all_dir_ext(dir="/home/"; ext=".gif")
         end
     end
     return path_to_exts
+end
+
+function make_code_back_up()
+    back_up_path = joinpath(homedir(),".CODE_BACK_UP/")
+    mkpath(back_up_path)
+    namefile = string(Dates.today(),".zip")
+    
+    # Remove oldest backup if more than 30 back up zip files
+    in_dir = sort!(readdir(back_up_path))
+    if length(in_dir) > 30
+        println(" Remove oldest back up: ", in_dir[1])
+        rm(back_up_path*in_dir[1])
+    end
+    
+    println(" Make a back up of all julia files in a zip file: ", back_up_path*namefile)
+    if isfile(back_up_path*namefile)
+        println("  Overwrite the back up of today")
+        rm(back_up_path*namefile)
+    end
+    w = ZipFile.Writer(back_up_path*namefile);
+    path_to_jl = get_all_ext(homedir(), ext=".jl")
+    new_names = similar(path_to_jl)
+    for i=1:length(path_to_jl)
+        tmp = Base.splitpath(path_to_jl[i])
+        new_names[i] = tmp[end-1]*"_"*tmp[end]
+        cp(path_to_jl[i], back_up_path*new_names[i])
+        ZipFile.addfile(w, back_up_path*new_names[i])
+        rm(back_up_path*new_names[i])
+    end
+    close(w)
+    println("Back up of all julia file in ",back_up_path*namefile)
+end
+
+function automatic_back_up()
+    back_up_path = joinpath(homedir(),".CODE_BACK_UP/")
+    println("Check if the back up of today is done")
+    if !isdir(back_up_path)
+        make_code_back_up()
+    else
+        namefile = string(Dates.today(),".zip")
+        if !isfile(back_up_path*namefile)
+            make_code_back_up()
+        else
+            println("Back up of today is already done")
+        end
+    end
 end
 
 function generate_dataframe(listname, listtab; fn="")
@@ -125,3 +173,5 @@ function ipnyb2jl(ipynfile; ext=".jl")
 end
 
 end
+
+JulUtils.automatic_back_up()
