@@ -112,11 +112,11 @@ println("path_l = ", localpath)
 
 The function is:
 ```julia
-run_one_sim(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl")
+run_one_sim(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU")
 ```
 One example:
 ```julia
-run_one_sim("D:/Code/mycode/", "something.jl", "mycode/", "Data/test/", "0-00:30:00"; partitions="private-kruse-gpu,shared-gpu")
+run_one_sim("D:/Code/mycode/", "something.jl", "mycode/", "Data/test/", "1-00:00:00"; partitions="private-kruse-gpu")
 ```
 It is also possible to define a "shortcut" function, example:
 ```julia
@@ -124,10 +124,10 @@ cd("D:/Code/")
 include("Utilities/Code2Cluster.jl")
 
 # Shortcut to run Mathieu DPD sim on all gpus
-runMat_allgpus(dir_clu, stime) = run_one_sim("Mathieu/", "main.jl", "Mathieu/", "Data/Mathieu/"*dir_clu, stime, partitions="private-kruse-gpu,shared-gpu")
+runMat_allgpus(dir_clu, stime) = run_one_sim("Mathieu/", "main.jl", "Mathieu/", "Data/Mathieu/"*dir_clu, stime)
 
 # An other shortcut to run Mathieu DPD sim on private gpus
-runMat_privategpus(dir_clu, stime) = run_one_sim("Mathieu/", "main.jl", "Mathieu/", "Data/Mathieu/"*dir_clu, stime)
+runMat_privategpus(dir_clu, stime) = run_one_sim("Mathieu/", "main.jl", "Mathieu/", "Data/Mathieu/"*dir_clu, stime, partitions="private-kruse-gpu")
 
 ```
 and then call it, the data will be save on the cluster in "Data/Mathieu/sim1/", duration of sim 12h:
@@ -188,7 +188,8 @@ println("Number of sims :", nrow(df))
 
 #### Input Parameters to explore
 ```julia
-include("../Utilities/julia_utilities.jl")
+include("../Utilities/using.jl")
+using_mod(".JulUtils")
 
 dir = @__DIR__
 
@@ -293,7 +294,10 @@ function run_array_DF(local_code_path, julia_filename, cluster_code_dir, cluster
 ```
 example:
 ```julia
+# GPU by default
 run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00")
+# CPU (max 200)
+run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00", partitions="shared-cpu", npara=200)
 ```
 
 ### Make your plots and explore the parameter space
