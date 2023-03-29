@@ -13,7 +13,7 @@ path_to_csv = "F:/2D_P_Q_PQ_scan/DF.csv"
 # 1 - web browser page
 # 2 - a standalone window 
 # 3 - vscode in the HTML plot panel / Notebook / Jupyterlab / Pluto
-disp = 3 
+disp = 2 
 
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
