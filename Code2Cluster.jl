@@ -6,18 +6,34 @@ using .SSH.Print
 # Change the saving directory from local to cluster
 # The saving directory have to be declare `dir = ...` 
 # "dir =" is the key string necessary to change the directory
-function change_saving_directory(local_directory_path, jlfile, sdir)
-    check = false
+function change_saving_directory(local_directory_path, jlfile, sdir, ldir; jobarray=false)
     jlfilec = string(jlfile[1:end-3],"-copie",jlfile[end-2:end])
     cp(local_directory_path*jlfile, local_directory_path*jlfilec, force = true)
     nb = open(local_directory_path*jlfilec, "r")
     open(local_directory_path*jlfile, "w") do io
+        println(io, sdir)
+        println(io, ldir)
+        jobarray ? println(io, """idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"]
+                                  @show fn = "\$idx/" 
+                                  file = joinpath(dir, fn) 
+                                  mkpath(file) """) : nothing
+        println(io, """println("path_c = ", dir)
+                       println("path_l = ", localpath)""")
+        jobarray ? println(io, "println(idx) ") : nothing
         for line in eachline(nb)
-            if !check && length(line) >= 5 && line[1:5] == "dir ="
-                check = true
-                println(io, sdir)
+            if startswith(line, "idx") || startswith(line, "file") || startswith(line, "mkpath(file)") || startswith(line, """println("path""") || startswith(line, "println(idx)") || startswith(line, "@show fn")
+                nothing
             else
-                println(io, line)
+                mline = Meta.parse(line)
+                if !isnothing(mline) && mline.head == :(=) 
+                    if typeof(mline.args[2]) == String && (ispath(mline.args[2]) || lookslikepath(mline.args[2]))
+                        nothing
+                    else
+                        println(io, line)
+                    end
+                else
+                    println(io, line)
+                end
             end
         end
     end
@@ -222,13 +238,13 @@ function install_julia_packages()
     println("The installation will be over when the job will be over")
 end
 
-function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
     cluster_save_directory *= endswith(cluster_save_directory, "/") ? "" : "/"
     
-    cluster_saving_directory = cluster_home_path*cluster_save_directory
+    cluster_saving_directory = scratch ? cluster_home_path*"scratch/"*cluster_save_directory : cluster_home_path*"scratch/"*cluster_save_directory    
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
     SSH.File.mkdir(cluster_home_path*"Code/")
@@ -239,8 +255,10 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """
+    ldir = """localpath = "$download_path" """
     println("Change saving directory: $sdir")
-    change_saving_directory(local_code_path, input_param_namefile, sdir)
+    println("Change path where the data will be download: $ldir")
+    change_saving_directory(local_code_path, input_param_namefile, sdir, ldir)
     
     println("Generate bash file")
     generate_bash(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, partitions=partitions, mem=mem, sh_name=sh_name, constraint=constraint)
@@ -256,15 +274,16 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
 end
 
 # npara is the maximal number of CPUs/GPUs allowed to run simultaneously in order to not use the whole cluster
-function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU")
+function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
     cluster_save_directory *= endswith(cluster_save_directory, "/") ? "" : "/"
+    download_path *= endswith(download_path, "/") ? "" : "/"
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     
-    cluster_saving_directory = cluster_home_path*cluster_save_directory
+    cluster_saving_directory = scratch ? cluster_home_path*"scratch"*cluster_save_directory : cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
     SSH.File.mkdir(cluster_home_path*"Code/")
@@ -275,8 +294,10 @@ function run_array_DF(local_code_path="D:/Code/.../", julia_filename="something.
     cluster_julia_file_path = cluster_code_directory*julia_filename
     
     sdir = """dir = "$cluster_saving_directory" """
+    ldir = """localpath = "$download_path" """
     println("Change saving directory: $sdir")
-    change_saving_directory(local_code_path, input_param_namefile, sdir)
+    println("Change path where the data will be download: $ldir")
+    change_saving_directory(local_code_path, input_param_namefile, sdir, ldir, jobarray=true)
     
     println("Generate bash file")
     generate_bash_array(cluster_saving_directory, local_code_path, cluster_julia_file_path, stime, Njob, partitions=partitions, mem=mem, sh_name=sh_name, npara=npara, constraint=constraint)

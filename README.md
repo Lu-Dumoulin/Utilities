@@ -26,7 +26,7 @@ JulUtils.generate_dataframe(listname, listtab) # generate a DataFrame with all p
 
 example
 ```julia
-include("PictUtils.jl")
+using_mod(".PictUtils.jl")
 PictUtils.pngstogif(...) # Convert all the .png of a folder in a .gif
 ```
 
@@ -85,11 +85,11 @@ SSH.Print.lastout(inc) # Print the .out of the (last+inc)th job
 ```
 If you `include("Code2Cluster.jl")` then `SSH.Print.` is not needed.
 
-## Run a simulation on the cluster
+## Run one simulation on the cluster
 You have to `include("Code2Cluster.jl")` in console with julia.
 Then you can install some usefull packages using `install_julia_packages()`.
 
-### Input Parameters
+<!-- ### Input Parameters
 
 In order to run your simulation on the cluster using only one line of code, the name of the variable indicating the name of the directory where you want to save data have to be `dir =` . It has to be exactly `dir =` without any space or tabulation !
 
@@ -106,17 +106,17 @@ localpath = "I:/DATA_TEMP/Asters/sim1/"
 
 println("path_c = ", dir)
 println("path_l = ", localpath)
-```
+``` -->
 
 ### run_one_sim() function
 
 The function is:
 ```julia
-run_one_sim(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; partitions="private-kruse-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU")
+run_one_sim(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
 ```
 One example:
 ```julia
-run_one_sim("D:/Code/mycode/", "something.jl", "mycode/", "Data/test/", "1-00:00:00"; partitions="private-kruse-gpu")
+run_one_sim("D:/Code/mycode/", "something.jl", "mycode/", "Data/test/", "1-00:00:00"; partitions="private-kruse-gpu", dowload_path="F:/mydata/test/")
 ```
 It is also possible to define a "shortcut" function, example:
 ```julia
@@ -231,82 +231,93 @@ generate_csv(dir, listname, listtab, name="DF")
 ```
 
 #### Common Input Parameters
-The InputParameters.jl file
-```julia
-include("../Utilities/julia_utilities.jl")
-usingpkg("FFTW, Distributions, DelimitedFiles, CSV, DataFrames, Dates, Printf, JLD, CUDA")
-
-idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
+<!-- idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
 
 dir = "..." 
 @show fn = "$idx/"
 file = joinpath(dir, fn)
 # path to save Data on computer
 localpath = "F:/Serie-9/"
-mkpath(file)
-
-dir_df = @__DIR__
-df = CSV.read(joinpath(dir_df,"DF.csv"), DataFrame)[idx,:]
-
-Tf = Float64
-
-Δx = 4e-3; Δz = 4e-3
-Δx2 = Δx*Δx; Δz2 = Δz*Δz
-Δt = Tf(1e-4)
-L = 10.0
-N = L / Δx
-
-WrapsT = 16
-Bx = ceil(Int, N/WrapsT)
-Bz = ceil(Int, N/WrapsT)
-block_dim = (WrapsT, WrapsT)
-grid_dim = (Bx, Bz)
-gridFFT_dim = (div(Bx,2)+1, Bz)
-
-...
-
-## Polar
-ap=Tf(df[:ap])
-# P - v, h, ΔμP
-ν=Tf(df[:nu]); 
-γ=Tf(df[:gamma])
-kp=Tf(df[:kp])
-
-## Nematic
-aq=Tf(df[:aq])
-# Q - v, H, ΔμQ
-λ=Tf(df[:lambda]) 
-Γ=Tf(df[:Gamma])
-kq=Tf(df[:kq])
+mkpath(file) 
 
 ...
 
 println("path_c = ", dir)
 println("path_l = ", localpath)
-println(idx)
+println(idx) -->
+The InputParameters.jl file
+```julia
+include("../Utilities/using.jl")
+usingpkg("FFTW, Distributions, DelimitedFiles, CSV, DataFrames, Dates, Printf, JLD, CUDA")
+
+dir_df = @__DIR__
+df = CSV.read(joinpath(dir_df,"DF.csv"), DataFrame)[idx,:]
+
+Δx = 4e-3; Δz = 4e-3
+Δx2 = Δx*Δx; Δz2 = Δz*Δz
+Δt = Float64(1e-4)
+L = 10.0
+N = L / Δx
+
+## Polar
+ap=Float64(df[:ap])
+# P - v, h, ΔμP
+ν=Float64(df[:nu]); 
+γ=Float64(df[:gamma])
+kp=Float64(df[:kp])
+
+## Nematic
+aq=Float64(df[:aq])
+# Q - v, H, ΔμQ
+λ=Float64(df[:lambda]) 
+Γ=Float64(df[:Gamma])
+kq=Float64(df[:kq])
+...
 
 ```
 
 ### run_arra_DF() function
 ```julia
 # npara is the maximal number of CPUs/GPUs allowed to run simultaneously in order to not use the whole cluster
-function run_array_DF(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU")
+function run_array_DF(local_code_path, julia_filename, cluster_code_dir, cluster_save_directory, stime; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
 ```
 example:
 ```julia
 # GPU by default
-run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00")
+run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00", download_path="F:/Data/mydata/")
 # CPU (max 200)
-run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00", partitions="shared-cpu", npara=200)
+run_array_DF("D:/Code/mycode/", "something.jl", "mycode/", "mydata/", "0-12:00:00", partitions="shared-cpu", npara=200, download_path="F:/Data/mydata/")
 ```
 
+This function automatically modify the "InputParameters.jl" (or the `input_param_namefile`) by adding/modifying these lines:
+```julia
+dir = "/home/users/d/dumoulil/scratch/mydata/" 
+localpath = "F:/Data/mydata/" 
+idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"]
+@show fn = "$idx/" 
+file = joinpath(dir, fn) 
+mkpath(file) 
+println("path_c = ", dir)
+println("path_l = ", localpath)
+println(idx) 
+# End of modification
+include("../Utilities/using.jl")
+using_pkg("CUDA, JLD, Statistics, Printf, FileIO, CSV, DataFrames, DelimitedFiles, Dates")
+using_mod(".JulUtils")
+```
 ### Make your plots and explore the parameter space
+In the `scan_param_pngs.jl` enter the correct path to the `.csv` file at root of your data/figure:
+```julia
+# Enter:
+# Path to csv file
+path_to_csv = "F:/2D_P_Q_PQ_scan/DF.csv"
+```
+Then `include("scan_param_pngs.jl")`, it will open this electron window:
 
 # Job info with Blink
-
-
 ```julia
-
+include("Code2Cluster.jl")
+infocluster()
 ```
 
 # How to use the JupyterHub

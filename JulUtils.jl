@@ -2,7 +2,7 @@ include("using.jl")
 using_pkg("DelimitedFiles, CSV, DataFrames, Makie, Dates")
 
 module JulUtils
-export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!, make_code_back_up, automatic_back_up
+export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!, make_code_back_up, automatic_back_up, lookslikepath
 # import .Main: import_pkg
 using DelimitedFiles, CSV, DataFrames, Makie, Dates
 
@@ -171,9 +171,12 @@ function ipnyb2jl(ipynfile; ext=".jl")
     return jlfile
 end
 
+function lookslikepath(path)
+    return endswith(path, "/") && (startswith(path, "/") || path[2]==':')
+end
 end
 
-JulUtils.automatic_back_up()
+# JulUtils.automatic_back_up()
 
 # ZIP version
 # function make_code_back_up()
