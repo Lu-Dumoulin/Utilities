@@ -60,14 +60,12 @@ app = App() do
         if length(tab_list[i]) > 1
             if isa((tab_list[i][1]), AbstractString)
                 symbolname = Symbol("sl_$(var_list[i])")
-                # @eval $symbolname = $(D.togglebuttons(tab_list[i], label= "$(var_list[i])") ) 
                 @eval $symbolname = $(D.Dropdown("$(var_list[i])", tab_list[i]) ) 
                 @eval push!(sl_list, $symbolname )
                 push!(sl_name, "sl_$(var_list[i])")
             else
                 symbolname = Symbol("sl_$(var_list[i])")
                 @eval $symbolname = $(D.Slider("$(var_list[i])", tab_list[i]))
-                # @eval $symbolname.widget[] = tab_list[i][1]
                 @eval push!(sl_list, $symbolname )
                 push!(sl_name, "sl_$(var_list[i])")
             end
@@ -103,9 +101,7 @@ app = App() do
             global Nt = length(lpict)
             global files = JSServe.Asset.(joinpath.(dirf[], lpict))
             id = sl.widget[]
-            # global sl = D.Slider("Time", 1:Nt)
             if id <= Nt
-                # sl.widget[] = id
                 ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
             else
                 sl.widget[] = Nt
