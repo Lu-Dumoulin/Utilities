@@ -310,15 +310,22 @@ In the `scan_param_pngs.jl` enter the correct path to the `.csv` file at root of
 ```julia
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ_scan/DF.csv"
+path_to_csv = "F:/2D_P_Q_PQ_long/DF.csv"
+# Choose where to display in: 
+# 1 - web browser page
+# 2 - a standalone window 
+# 3 - vscode in the HTML plot panel / Notebook / Jupyterlab / Pluto
+disp = 1 
 ```
 Then `include("scan_param_pngs.jl")`, it will open this electron window:
+![scan_param_png](docs/scan_param_png.png)
 
 # Job info with Blink
 ```julia
 include("Code2Cluster.jl")
 infocluster()
 ```
+![infocluster](docs/infocluster_array.png)
 
 # How to use the JupyterHub
 
