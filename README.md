@@ -250,6 +250,8 @@ The InputParameters.jl file
 include("../Utilities/using.jl")
 usingpkg("FFTW, Distributions, DelimitedFiles, CSV, DataFrames, Dates, Printf, JLD, CUDA")
 
+idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
+
 dir_df = @__DIR__
 df = CSV.read(joinpath(dir_df,"DF.csv"), DataFrame)[idx,:]
 

@@ -13,7 +13,7 @@ function change_saving_directory(local_directory_path, jlfile, sdir, ldir; jobar
     open(local_directory_path*jlfile, "w") do io
         println(io, sdir)
         println(io, ldir)
-        jobarray ? println(io, """idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"]
+        jobarray ? println(io, """idx = Base.parse(Int, ENV["SLURM_ARRAY_TASK_ID"])
                                   @show fn = "\$idx/" 
                                   file = joinpath(dir, fn) 
                                   mkpath(file) """) : nothing
