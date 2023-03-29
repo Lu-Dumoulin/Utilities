@@ -8,12 +8,12 @@
 
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ_scan/DF.csv"
+path_to_csv = "F:/2D_P_Q_PQ_long/DF.csv"
 # Choose where to display in: 
 # 1 - web browser page
 # 2 - a standalone window 
 # 3 - vscode in the HTML plot panel / Notebook / Jupyterlab / Pluto
-disp = 2 
+disp = 1 
 
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
@@ -29,7 +29,6 @@ import JSServe.TailwindDashboard as D
 using_mod(".JulUtils")
 
 dir, name_csv = JulUtils.splitpath(path_to_csv)
-
 
 df = CSV.read(dir*name_csv, DataFrame)[:,1:end]
 symb = Sys.iswindows() ? '\\' : '/'
@@ -62,7 +61,7 @@ app = App() do
             if isa((tab_list[i][1]), AbstractString)
                 symbolname = Symbol("sl_$(var_list[i])")
                 # @eval $symbolname = $(D.togglebuttons(tab_list[i], label= "$(var_list[i])") ) 
-                @eval $symbolname = $(D.Slider("$(var_list[i])"), tab_list[i])# ) 
+                @eval $symbolname = $(D.Dropdown("$(var_list[i])", tab_list[i]) ) 
                 @eval push!(sl_list, $symbolname )
                 push!(sl_name, "sl_$(var_list[i])")
             else
@@ -93,6 +92,7 @@ app = App() do
     on(fn) do x
         dirf[] = string(dir,x,radio_dir.widget.value[])
     end
+    
     on(radio_dir.widget.value) do x
         dirf[] = string(dir,fn[],x)
     end
@@ -136,13 +136,17 @@ app = App() do
                     dist = zeros(Nrow)
                     for r=1:Nrow
                         for c=1:N_wid
-                            dist[r] += Int(df[r, Symbol(var_list_sl[c])] == sl_list[c].widget[])*(1 + Int(check_list[c].widget[])*100)
+                            dist[r] += Int(df[r, Symbol(var_list_sl[c])] == sl_list[c].widget.value[])*(1 + Int(check_list[c].widget.value[])*100)
                         end
                     end
                     idx = findmax(dist)[2]
                     for c=1:N_wid
-                        if sl_list[c].widget[] != df[idx, Symbol(var_list_sl[c])]
-                            sl_list[c].widget[] = df[idx, Symbol(var_list_sl[c])]
+                        if sl_list[c].widget.value[] != df[idx, Symbol(var_list_sl[c])]
+                            if !isa(sl_list[c].widget.value[], AbstractString)
+                                sl_list[c].widget[] = df[idx, Symbol(var_list_sl[c])]
+                            else
+                                sl_list[c].widget.value[] = df[idx, Symbol(var_list_sl[c])]
+                            end
                         end
                     end
                     global fn[] = string(df[idx,:fn])*"/"
@@ -156,13 +160,17 @@ app = App() do
                     dist = zeros(Nrow)
                     for r=1:Nrow
                         for c=1:N_wid
-                            dist[r] += Int(df[r, Symbol(var_list_sl[c])] == sl_list[c].widget[])*(1 + Int(check_list[c].widget[])*100)
+                            dist[r] += Int(df[r, Symbol(var_list_sl[c])] == sl_list[c].widget.value[])*(1 + Int(check_list[c].widget.value[])*100)
                         end
                     end
                     idx = findmax(dist)[2]
                     for c=1:N_wid
-                        if sl_list[c].widget[] != df[idx, Symbol(var_list_sl[c])]
-                            sl_list[c].widget[] = df[idx, Symbol(var_list_sl[c])]
+                        if sl_list[c].widget.value[] != df[idx, Symbol(var_list_sl[c])]
+                            if !isa(sl_list[c].widget.value[], AbstractString)
+                                sl_list[c].widget[] = df[idx, Symbol(var_list_sl[c])]
+                            else
+                                sl_list[c].widget.value[] = df[idx, Symbol(var_list_sl[c])]
+                            end
                         end
                     end
                     global fn[] = string(df[idx,:fn])*"/"
@@ -193,7 +201,7 @@ app = App() do
         end
     end
     
-   sl.widget[] = 1
+    sl.widget[] = 1
 
     return eval(Meta.parse(string(""" DOM.div( D.FlexRow( D.FlexCol(radio_dir, radio_png, """)*join([ " D.FlexRow( $(sl_name[i]), $(check_name[i]) ), " for i in 1:N_wid ])[1:end-1]*string(") , ui))")))
 end
