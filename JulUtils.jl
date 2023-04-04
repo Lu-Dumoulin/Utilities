@@ -52,6 +52,32 @@ function get_all_dir_ext(dir="/home/"; ext=".gif", hidden=false)
     return path_to_exts
 end
 
+function copy_all_ext(src_root = "/home/", src_dir="from_this_directory/", dest_root="F:/Images/"; ext=".png")
+    # Create the directory
+    src_path = get_all_dir_ext(src_root*src_dir; ext=ext)
+    dest_path = unique(replace.(src_path, src_root=>dest_root))
+    mkpath.(dest_path)
+    # Copie the files
+    src_ext = get_all_ext(src_root*src_dir; ext=ext)
+    dest_ext = replace.(src_ext, src_root=>dest_root)
+    cp.(src_ext, dest_ext)
+    println(" Done")
+    return nothing
+end
+    
+function move_all_ext(src_root = "/home/", src_dir="from_this_directory/", dest_root="F:/Images/"; ext=".png")
+    # Create the directory
+    src_path = get_all_dir_ext(src_root*src_dir; ext=ext)
+    dest_path = unique(replace.(src_path, src_root=>dest_root))
+    mkpath.(dest_path)
+    # Move the files
+    src_ext = get_all_ext(src_root*src_dir; ext=ext)
+    dest_ext = replace.(src_ext, src_root=>dest_root)
+    mv.(src_ext, dest_ext)
+    println(" Done")
+    return nothing
+end
+
 function make_code_back_up()
     root_dir = Sys.iswindows() ?  normpath(joinpath(pwd(),"..","..")) : homedir() 
     back_up_path = joinpath(root_dir,".CODE_BACK_UP/")
