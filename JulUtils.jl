@@ -2,7 +2,7 @@ include("using.jl")
 using_pkg("DelimitedFiles, CSV, DataFrames, Makie, Dates")
 
 module JulUtils
-export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!, make_code_back_up, automatic_back_up, lookslikepath
+export read_last_line, splitpath, get_all_ext, get_all_dir_ext, generate_dataframe, generate_csv, screensize, filter_ext, filter_ext!, make_code_back_up, automatic_back_up, lookslikepath, copy_all_ext, move_all_ext
 # import .Main: import_pkg
 using DelimitedFiles, CSV, DataFrames, Makie, Dates
 
