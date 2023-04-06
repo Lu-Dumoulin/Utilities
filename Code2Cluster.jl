@@ -283,7 +283,7 @@ function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl",
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     
-    cluster_saving_directory = scratch ? cluster_home_path*"scratch"*cluster_save_directory : cluster_home_path*cluster_save_directory
+    cluster_saving_directory = scratch ? cluster_home_path*"scratch/"*cluster_save_directory : cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
     SSH.File.mkdir(cluster_home_path*"Code/")
