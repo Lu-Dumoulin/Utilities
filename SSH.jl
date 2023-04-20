@@ -86,7 +86,7 @@ using ..SSH, .SSH.File, ...JulUtils, Dates
 @inline function jobids()
     jobIDs=[]
     for i in split(squeue(opt="--Format JobID"), keepempty=false)
-        if length(string(i)) > 6
+        if length(string(i)) > 4
             b = tryparse(Int, string(i))
             b != nothing ? append!(jobIDs, b) :  nothing
         end
@@ -235,7 +235,7 @@ end
 # Call download_dir and upate_ext for specific extension
 # This function needs to be edited according to your need
 function download(cluster_directory, local_directory_path)
-    cluster_directory_path = cluster_directory[1:4] == "/hom" ? cluster_directory : cluster_home_path*cluster_directory
+    cluster_directory_path = cluster_directory[1:4] == "/hom" || "/srv" ? cluster_directory : cluster_home_path*cluster_directory
     println("Download $cluster_directory_path into $local_directory_path")
     mkpath(local_directory_path)
     update_ext(cluster_directory_path, local_directory_path, ".csv")
