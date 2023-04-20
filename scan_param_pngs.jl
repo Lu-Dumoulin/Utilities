@@ -8,12 +8,12 @@
 
 # Enter:
 # Path to csv file
-path_to_csv = "F:/2D_P_Q_PQ_long/DF.csv"
+path_to_csv = "F:/noPQ/DF.csv"
 # Choose where to display in: 
 # 1 - web browser page
 # 2 - a standalone window 
 # 3 - vscode in the HTML plot panel / Notebook / Jupyterlab / Pluto
-disp = 1 
+disp = 2
 
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
@@ -96,24 +96,28 @@ app = App() do
     end
     
     on(dirf) do x
-        if radio_png.widget.value[]=="PNG"
-            global lpict = filter!(endswith(".png"),readdir(dirf[]))
-            global Nt = length(lpict)
-            global files = JSServe.Asset.(joinpath.(dirf[], lpict))
-            id = sl.widget[]
-            if id <= Nt
-                ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
-            else
-                sl.widget[] = Nt
-                ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
-            end
+        if !isdir(dirf[])
+            ui[] = DOM.div()
         else
-            gifpath = filter!(endswith(".gif"),readdir(dirf[]))
-            if length(gifpath) == 0
-                ui[] = DOM.div()
+            if radio_png.widget.value[]=="PNG"
+                global lpict = filter!(endswith(".png"),readdir(dirf[]))
+                global Nt = length(lpict)
+                global files = JSServe.Asset.(joinpath.(dirf[], lpict))
+                id = sl.widget[]
+                if id <= Nt
+                    ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
+                else
+                    sl.widget[] = Nt
+                    ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+                end
             else
-                global files = JSServe.Asset.(joinpath.(dirf[], gifpath))
-                ui[] = DOM.div(DOM.img(src=first(files)), "Simulation number $(fn[])")
+                gifpath = filter!(endswith(".gif"),readdir(dirf[]))
+                if length(gifpath) == 0
+                    ui[] = DOM.div()
+                else
+                    global files = JSServe.Asset.(joinpath.(dirf[], gifpath))
+                    ui[] = DOM.div(DOM.img(src=first(files)), "Simulation number $(fn[])")
+                end
             end
         end
     end
