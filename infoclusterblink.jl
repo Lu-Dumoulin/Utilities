@@ -13,7 +13,7 @@ function get_jobsinfo()
     
     jobIDs = SSH.Get.jobids()
 
-    longstring *= SSH.ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed --array-unique")
+    longstring *= SSH.ssh("squeue --me --Format JobID,Name,Partition,NodeList,PendingTime,Reason,StartTime,State,TimeUsed | uniq")#--array-unique")
     longstring *= "\n"
     for jobID in jobIDs
         idx = findfirst(isequal(jobID), mem_jobIDs)
