@@ -150,7 +150,7 @@ module Print
 export quota, infogpus, seff, squeue, scancel, out, lastout
 using ..SSH, .SSH.Get
 
-infogpus() = ssh_print("squeue --nodes=gpu[020-022,027-031]")
+infogpus() = ssh_print("squeue --nodes=gpu[020,022,027-033,045]")
 quota(user=SSH.username) = ssh_print("beegfs-get-quota-home-scratch.sh $user")
 
 squeue(; username=SSH.username, opt="") = ssh_print("squeue -u "*string(username)*string(" ",opt))
