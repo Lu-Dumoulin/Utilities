@@ -147,7 +147,7 @@ end
 
 ############### Print informations ###############
 module Print
-export quota, infogpus, seff, squeue, scancel, out, lastout, get_list_nodes
+export quota, infogpus, seff, squeue, scancel, out, lastout, get_list_nodes, infonodes
 using ..SSH, .SSH.Get
 
 quota(user=SSH.username) = ssh_print("beegfs-get-quota-home-scratch.sh $user")
@@ -159,11 +159,10 @@ scancel(num) = ssh_print("scancel "*string(num))
 
 function get_list_nodes(constraints=["AMPERE","DOUBLE","CAPABILITY_8"])
     lnodes = split(SSH.ssh("""sinfo --Format nodehost:20,features_act:80 |grep -v '(null)' |awk 'NR == 1; NR > 1 {print \$0 | "sort -n"}'"""), "\n", keepempty=false)
-    res = "["
+    res = ""
     for i in lnodes
-        sum(Int.([occursin(j, i) for j in constraints])) == length(constraints) ? (res*= length(res)>1 ? string(",",split(i)[1]) : string(split(i)[1]) ) : nothing
+        sum(Int.([occursin(j, i) for j in constraints])) == length(constraints) ? (res*= length(res)>0 ? string(",",split(i)[1]) : string(split(i)[1]) ) : nothing
     end
-    res *= "]"
     return res
 end
 
