@@ -13,7 +13,7 @@ path_to_csv = "F:/noPQ/DF.csv"
 # 1 - web browser page
 # 2 - a standalone window 
 # 3 - vscode in the HTML plot panel / Notebook / Jupyterlab / Pluto
-disp = 2
+disp = 1
 
 
 # ██████╗  ██████╗     ███╗   ██╗ ██████╗ ████████╗    ███╗   ███╗ ██████╗ ██████╗ ██╗███████╗██╗   ██╗    ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗
@@ -79,13 +79,21 @@ app = App() do
     end
 
     global radio_dir = D.Dropdown("Directory:", tab_fig_dir )
-    global radio_png = D.Dropdown("pngs or gif:", ["PNG", "GIF"] )
+    global radio_png = D.Dropdown("pngs or gif:", ["PNG", "GIF"]; index=2)
     global ui = Observable{Any}(DOM.div())
     global fn = Observable{Any}(string(df[1,:fn])*"/")
     global dirf = Observable(string(joinpath(dir,fn[]))*string(tab_fig_dir[1]))
-    global sl = D.Slider("Time", 1:length(readdir(dirf[])))
+    Nfiles = zeros(Nrow)
+    for idx = 1:Nrow
+        ifn = string(df[idx,:fn])*"/"
+        idirf = string(joinpath(dir,ifn))*string(tab_fig_dir[1])
+        isdir(idirf) ? Nfiles[idx] = length(joinpath.(idirf, filter!(endswith(".png"),readdir(idirf) ) )) : nothing
+    end
+    global Nt = Int(maximum(Nfiles))
+    global sl = D.Slider("Time", 1:Nt)#length(filter!(endswith(".png"),readdir(dirf[]) )))
     global files = JSServe.Asset.(joinpath.(dirf[], filter!(endswith(".png"),readdir(dirf[]) ) ) )
-    global Nt = length(files)
+    #length(files)
+    global Npict = length(files)
     
     on(fn) do x
         dirf[] = string(dir,x,radio_dir.widget.value[])
@@ -101,14 +109,21 @@ app = App() do
         else
             if radio_png.widget.value[]=="PNG"
                 global lpict = filter!(endswith(".png"),readdir(dirf[]))
-                global Nt = length(lpict)
+                # global Nt = length(lpict)
+                global Npict = length(lpict)
                 global files = JSServe.Asset.(joinpath.(dirf[], lpict))
                 id = sl.widget[]
-                if id <= Nt
+                # if id <= Nt
+                #     ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
+                # else
+                #     sl.widget[] = Nt
+                #     ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+                # end
+                if id <= Npict
                     ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
                 else
-                    sl.widget[] = Nt
-                    ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+                    # sl.widget[] = Npict
+                    ui[] = DOM.div(sl, "Simulation number $(fn[])")#DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
                 end
             else
                 gifpath = filter!(endswith(".gif"),readdir(dirf[]))
@@ -123,10 +138,10 @@ app = App() do
     end
     
     on(sl.widget.value) do x
-        if x<=Nt
+        if x<=Npict#t
             ui[] = DOM.div(DOM.img(src=files[x]), sl, "Simulation number $(fn[])")
         else
-            ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+            ui[] = DOM.div(DOM.img(src=files[Npict]), sl, "Simulation number $(fn[])")
         end
     end
 
@@ -181,14 +196,21 @@ app = App() do
     on(radio_png.widget.value) do x
         if x=="PNG"
             global lpict = filter!(endswith(".png"),readdir(dirf[]))
-            global Nt = length(lpict)
+            global Npict = length(lpict)
+            # global Nt = length(lpict)
             global files = JSServe.Asset.(joinpath.(dirf[], lpict))
             id = sl.widget[]
-            if id <= Nt
+            # if id <= Nt
+            #     ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
+            # else
+            #     sl.widget[] = Nt
+            #     ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+            # end
+            if id <= Npict
                 ui[] = DOM.div(DOM.img(src=files[id]), sl, "Simulation number $(fn[])")
             else
-                sl.widget[] = Nt
-                ui[] = DOM.div(DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
+                # sl.widget[] = Nt
+                ui[] = DOM.div(sl, "Simulation number $(fn[])")#DOM.img(src=files[Nt]), sl, "Simulation number $(fn[])")
             end
         else
             gif_path = filter!(endswith(".gif"),readdir(dirf[]))
