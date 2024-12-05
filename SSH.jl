@@ -3,10 +3,11 @@ using_pkg("RemoteFiles, OpenSSH_jll")
 using_mod(".JulUtils")
 
 module SSH
-export ssh, run_ssh, ssh_print, cluster_home_path, local_utilities_path, username, host
+export ssh, run_ssh, ssh_print, cluster_home_path, local_utilities_path, username, host, cluster_scratch_path
 
 include("ssh_login.jl")
 const cluster_home_path = "/home/users/$(username[1])/$username/"
+const cluster_scratch_path = "/srv/beegfs/scratch/users/$(username[1])/$username/"
 
 const local_utilities_path = normpath(string(@__DIR__,"/"))
 

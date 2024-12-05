@@ -113,10 +113,8 @@ function generate_inst_package_julia()
     using CUDA
     CUDA.versioninfo()
     pkg_list = ["FFTW", "FileIO", "Distributions", "Printf", "JLD", "Statistics", "JSON", "Markdown", "Dates", "DelimitedFiles", "CSV", "DataFrames"]
-    for i in pkg_list
-        Pkg.add(i)
-    end
-    
+    [Pkg.add(i) for i in pkg_list]
+        
     using FFTW, FileIO, Distributions, Printf, JLD, Statistics
     using JSON, Markdown, Dates, DelimitedFiles, CSV, DataFrames
     
@@ -232,7 +230,7 @@ function install_julia_packages()
     println("Create temporal folder install_pack/ ")
     folder_path = generate_inst_package_julia()
     
-    run_one_sim(folder_path, "install_packages.jl", "install_pack/", "Code/install_pack/", "0-01:00:00"; partitions="private-kruse-gpu,shared-gpu", sh_name="install_pkg.sh", input_param_namefile = "install_packages.jl", constraint="")
+    run_one_sim(folder_path, "install_packages.jl", "install_pack/", "Code/install_pack/", "0-01:00:00"; partitions="private-kruse-gpu,shared-gpu", sh_name="install_pkg.sh", input_param_namefile = "install_packages.jl", constraint="", scratch=false)
     println("Remove temporal folder install_pack/ ")
     rm(folder_path, force = true, recursive = true)
     println("The installation will be over when the job will be over")
@@ -283,7 +281,7 @@ function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl",
     
     @show Njob = nrow(CSV.read(joinpath(local_code_path,df_name), DataFrame))
     
-    cluster_saving_directory = scratch ? cluster_home_path*"scratch/"*cluster_save_directory : cluster_home_path*cluster_save_directory
+    cluster_saving_directory = scratch ? cluster_scratch_path*cluster_save_directory : cluster_home_path*cluster_save_directory
     cluster_code_directory = cluster_home_path*"Code/"*cluster_code_dir
     
     SSH.File.mkdir(cluster_home_path*"Code/")
@@ -318,3 +316,7 @@ function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl",
 end
 
 infocluster() = include(joinpath(@__DIR__,"infoclusterblink.jl"))
+
+# run_array_DF("../FFT_2D_P/", "2D.jl", "FFT_2D_P_sat/", "Data/P-series/sat/", "0-12:00:00", npara = 40, download_path = "Z:/sat/", sh_name="sat.sh")
+# run_array_DF("../Ella_adaptive_mesh/", "main.jl", "Ella_adaptive_mesh1/", "Data/Ella/deb4/", "0-12:00:00", npara = 40, download_path = "D:/Ella/deb4/", sh_name="el.sh", mem="8000", scratch=false)
+# run_array_DF("../Ella_w_PARS/", "main.jl", "Ella_PARs2/", "Data/Ella_PARs2/", "7-0:00:00", partitions="private-kruse-gpu", npara = 1, download_path = "D:/Ella/Cu_PARs2/", sh_name="7d.sh", mem="8000")
