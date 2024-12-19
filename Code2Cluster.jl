@@ -74,7 +74,7 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
            end;
 end
 
-function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU", sh_name="C2C_array.sh", npara=20)
+function generate_bash_array(cluster_saving_directory_path, local_directory_path, julia_file_path, time, Njob; partitions="private-kruse-gpu,shared-gpu", mem="3000", constraint="DOUBLE_PRECISION_GPU,COMPUTE_TYPE_AMPERE", sh_name="C2C_array.sh", npara=20)
     local bsh0 = """
     #!/bin/env bash
     #SBATCH --array=1-$Njob%$npara
@@ -84,7 +84,7 @@ function generate_bash_array(cluster_saving_directory_path, local_directory_path
     #SBATCH --mem=$mem """
     if occursin("gpu", partitions)
         bsh0 *= """ 
-        #SBATCH --gpus=ampere:1 
+        #SBATCH --gpus=1 
         #SBATCH --constraint=$constraint
         """
     else
