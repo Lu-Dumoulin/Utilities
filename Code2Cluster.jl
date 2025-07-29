@@ -52,7 +52,7 @@ function generate_bash(cluster_saving_directory_path, local_directory_path, juli
     #SBATCH --mem=$mem """
     if occursin("gpu", partitions)
         bsh0 *= """ 
-        #SBATCH --gpus=ampere:1 
+        #SBATCH --gpus=1 
         #SBATCH --constraint=$constraint
         """
     else
@@ -236,7 +236,7 @@ function install_julia_packages()
     println("The installation will be over when the job will be over")
 end
 
-function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
+function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C.sh", input_param_namefile = "InputParameters.jl", constraint="DOUBLE_PRECISION_GPU,COMPUTE_TYPE_AMPERE", scratch = true, download_path="/")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -272,7 +272,7 @@ function run_one_sim(local_code_path="D:/Code/.../", julia_filename="something.j
 end
 
 # npara is the maximal number of CPUs/GPUs allowed to run simultaneously in order to not use the whole cluster
-function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU", scratch = true, download_path="/")
+function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl", cluster_code_dir = "Protrusions/PQ/", cluster_save_directory="test/", stime="0-00:30:00"; df_name="DF.csv", partitions="private-kruse-gpu,shared-gpu", mem="3000", sh_name="C2C_array.sh", input_param_namefile = "InputParameters.jl", npara=20, constraint="DOUBLE_PRECISION_GPU,COMPUTE_TYPE_AMPERE", scratch = true, download_path="/")
     
     local_code_path *= endswith(local_code_path, "/") ? "" : "/"
     cluster_code_dir *= endswith(cluster_code_dir, "/") ? "" : "/"
@@ -317,6 +317,7 @@ end
 
 infocluster() = include(joinpath(@__DIR__,"infoclusterblink.jl"))
 
+# Examples
 # run_array_DF("../FFT_2D_P/", "2D.jl", "FFT_2D_P_sat/", "Data/P-series/sat/", "0-12:00:00", npara = 40, download_path = "Z:/sat/", sh_name="sat.sh")
 # run_array_DF("../Ella_adaptive_mesh/", "main.jl", "Ella_adaptive_mesh1/", "Data/Ella/deb4/", "0-12:00:00", npara = 40, download_path = "D:/Ella/deb4/", sh_name="el.sh", mem="8000", scratch=false)
 # run_array_DF("../Ella_w_PARS/", "main.jl", "Ella_PARs2/", "Data/Ella_PARs2/", "7-0:00:00", partitions="private-kruse-gpu", npara = 1, download_path = "D:/Ella/Cu_PARs2/", sh_name="7d.sh", mem="8000")
