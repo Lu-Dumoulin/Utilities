@@ -315,7 +315,7 @@ function run_array_DF(local_code_path="D:/Code/", julia_filename="something.jl",
     println("Job submitted, the id is: ", njob) # print job number
 end
 
-infocluster() = include(joinpath(@__DIR__,"infoclusterblink.jl"))
+infocluster() = include(joinpath(@__DIR__,"infoclusterapp.jl"))
 
 # Examples
 # run_array_DF("../FFT_2D_P/", "2D.jl", "FFT_2D_P_sat/", "Data/P-series/sat/", "0-12:00:00", npara = 40, download_path = "Z:/sat/", sh_name="sat.sh")
